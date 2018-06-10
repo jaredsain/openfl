@@ -227,8 +227,11 @@ class Sound extends EventDispatcher {
 		var source = new AudioSource (__buffer);
 		source.offset = Std.int (startTime);
 		if (loops > 1) source.loops = loops - 1;
+		#if js
+		else if(loops == -1) source.loops = 999999;
+		#else
 		else if(loops == -1) source.loops = -1;
-		
+		#end
 		source.gain = volume;
 		
 		var position = source.position;
