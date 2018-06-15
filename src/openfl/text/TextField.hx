@@ -684,7 +684,7 @@ class TextField extends InteractiveObject {
 				
 			}
 			
-			if (nextRange == prevRange) {
+			if (nextRange == prevRange && nextRange != null) {
 				
 				// the new incoming text format range is completely within this existing range, let's divide it up
 				
