@@ -4,6 +4,7 @@ package openfl._internal.renderer.opengl;
 import lime.graphics.opengl.WebGLContext;
 import lime.utils.Float32Array;
 import openfl.display.BitmapData;
+import openfl.display.BlendMode;
 import openfl.display.OpenGLRenderer;
 import openfl.display.Shader;
 import openfl.display.TileContainer;
@@ -43,6 +44,7 @@ class GLTilemap {
 	private static var bufferPosition:Int;
 	private static var cacheColorTransform:ColorTransform;
 	private static var currentBitmapData:BitmapData;
+	private static var currentBlendMode:BlendMode;
 	private static var currentShader:Shader;
 	private static var lastFlushedPosition:Int;
 	private static var lastUsedBitmapData:BitmapData;
@@ -111,6 +113,8 @@ class GLTilemap {
 			
 			alpha = tile.alpha * worldAlpha;
 			visible = tile.visible;
+			tile.__dirty = false;
+			
 			if (!visible || alpha <= 0) continue;
 			
 			if (colorTransformEnabled) {
@@ -293,6 +297,7 @@ class GLTilemap {
 			
 		}
 		
+		group.__dirty = false;
 		tilemap.__bufferDirty = true;
 		bufferLength = bufferPosition;
 		Matrix.__pool.release (tileTransform);
@@ -300,7 +305,7 @@ class GLTilemap {
 	}
 	
 	
-	private static function flush (tilemap:Tilemap, renderer:OpenGLRenderer):Void {
+	private static function flush (tilemap:Tilemap, renderer:OpenGLRenderer, blendMode:BlendMode):Void {
 		
 		if (currentShader == null) {
 			
@@ -324,6 +329,12 @@ class GLTilemap {
 			} else {
 				
 				renderer.applyAlpha (tilemap.__worldAlpha);
+				
+			}
+			
+			if (tilemap.tileBlendModeEnabled) {
+				
+				renderer.__setBlendMode (blendMode);
 				
 			}
 			
@@ -419,9 +430,16 @@ class GLTilemap {
 		if (tilemap.tileAlphaEnabled) stride++;
 		if (tilemap.tileColorTransformEnabled) stride += 8;
 		
+		currentBlendMode = tilemap.__worldBlendMode;
+		
 		var gl = renderer.__gl;
 		
-		renderer.__setBlendMode (tilemap.__worldBlendMode);
+		if (!tilemap.tileBlendModeEnabled) {
+			
+			renderer.__setBlendMode (currentBlendMode);
+			
+		}
+		
 		renderer.__pushMaskObject (tilemap);
 		// renderer.filterManager.pushObject (tilemap);
 		
@@ -429,8 +447,8 @@ class GLTilemap {
 		rect.setTo (0, 0, tilemap.__width, tilemap.__height);
 		renderer.__pushMaskRect (rect, tilemap.__renderTransform);
 		
-		renderTileContainer (tilemap, renderer, tilemap.__group, cast tilemap.__worldShader, stride, tilemap.__tileset, tilemap.__worldAlpha, null);
-		flush (tilemap, renderer);
+		renderTileContainer (tilemap, renderer, tilemap.__group, cast tilemap.__worldShader, stride, tilemap.__tileset, tilemap.__worldAlpha, tilemap.tileBlendModeEnabled, currentBlendMode, null);
+		flush (tilemap, renderer, currentBlendMode);
 		
 		// renderer.filterManager.popObject (tilemap);
 		renderer.__popMaskRect ();
@@ -439,12 +457,12 @@ class GLTilemap {
 	}
 	
 	
-	private static function renderTileContainer (tilemap:Tilemap, renderer:OpenGLRenderer, group:TileContainer, defaultShader:Shader, stride:Int, defaultTileset:Tileset, worldAlpha:Float, cacheBitmapData:BitmapData):Void {
+	private static function renderTileContainer (tilemap:Tilemap, renderer:OpenGLRenderer, group:TileContainer, defaultShader:Shader, stride:Int, defaultTileset:Tileset, worldAlpha:Float, blendModeEnabled:Bool, defaultBlendMode:BlendMode, cacheBitmapData:BitmapData):Void {
 		
 		var tiles = group.__tiles;
 		var length = group.__length;
 		
-		var tile, tileset, alpha, visible, id, tileData, tileRect, shader:Shader, bitmapData;
+		var tile, tileset, alpha, visible, blendMode = null, id, tileData, tileRect, shader:Shader, bitmapData;
 		var tileWidth, tileHeight, uvX, uvY, uvHeight, uvWidth, offset;
 		
 		for (tile in tiles) {
@@ -457,9 +475,15 @@ class GLTilemap {
 			
 			shader = tile.shader != null ? tile.shader : defaultShader;
 			
+			if (blendModeEnabled) {
+				
+				blendMode = (tile.__blendMode != null) ? tile.__blendMode : defaultBlendMode;
+				
+			}
+			
 			if (tile.__length > 0) {
 				
-				renderTileContainer (tilemap, renderer, cast tile, shader, stride, tileset, alpha, cacheBitmapData);
+				renderTileContainer (tilemap, renderer, cast tile, shader, stride, tileset, alpha, blendModeEnabled, blendMode, cacheBitmapData);
 				
 			} else {
 				
@@ -482,14 +506,15 @@ class GLTilemap {
 					
 				}
 				
-				if ((shader != currentShader && currentShader != null) || (bitmapData != currentBitmapData && currentBitmapData != null)) {
+				if ((shader != currentShader && currentShader != null) || (bitmapData != currentBitmapData && currentBitmapData != null) || (currentBlendMode != blendMode)) {
 					
-					flush (tilemap, renderer);
+					flush (tilemap, renderer, currentBlendMode);
 					
 				}
 				
 				currentBitmapData = bitmapData;
 				currentShader = shader;
+				currentBlendMode = blendMode;
 				bufferPosition += (stride * 6);
 				
 			}

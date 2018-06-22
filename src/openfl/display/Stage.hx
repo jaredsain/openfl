@@ -130,6 +130,7 @@ class Stage extends DisplayObjectContainer implements IModule {
 	private var __mouseDownLeft:InteractiveObject;
 	private var __mouseDownMiddle:InteractiveObject;
 	private var __mouseDownRight:InteractiveObject;
+	private var __mouseOutStack:Array<DisplayObject>;
 	private var __mouseOverTarget:InteractiveObject;
 	private var __mouseX:Float;
 	private var __mouseY:Float;
@@ -171,6 +172,9 @@ class Stage extends DisplayObjectContainer implements IModule {
 		#end
 		
 		super ();
+		
+		__colorSplit = [ 0xFF, 0xFF, 0xFF ];
+		__colorString = "#FFFFFF";
 		
 		#if commonjs
 		var app = null;
@@ -291,6 +295,7 @@ class Stage extends DisplayObjectContainer implements IModule {
 		__forceRender = false;
 		__stack = [];
 		__rollOutStack = [];
+		__mouseOutStack = [];
 		__touchData = new Map<Int, TouchData>();
 		
 		if (Lib.current.stage == null) {
@@ -310,7 +315,8 @@ class Stage extends DisplayObjectContainer implements IModule {
 			
 			DisplayObject.__initStage = this;
 			var sprite:Sprite = cast Type.createInstance (documentClass, []);
-			addChild (sprite);
+			// addChild (sprite); // done by init stage
+			sprite.dispatchEvent (new Event (Event.ADDED_TO_STAGE, false, false));
 			
 		}
 		
@@ -1321,6 +1327,8 @@ class Stage extends DisplayObjectContainer implements IModule {
 			#elseif cs
 			throw e;
 			//cs.Lib.rethrow (e);
+			#elseif hl
+			hl.Api.rethrow (e);
 			#else
 			throw e;
 			#end
@@ -1593,7 +1601,7 @@ class Stage extends DisplayObjectContainer implements IModule {
 			if (__mouseOverTarget != null) {
 				
 				event = MouseEvent.__create (MouseEvent.MOUSE_OUT, button, __mouseX, __mouseY, __mouseOverTarget.__globalToLocal (targetPoint, localPoint), cast __mouseOverTarget);
-				__dispatchTarget (__mouseOverTarget, event);
+				__dispatchStack (event, __mouseOutStack);				
 				
 			}
 			
@@ -1640,12 +1648,12 @@ class Stage extends DisplayObjectContainer implements IModule {
 			if (target != null) {
 				
 				event = MouseEvent.__create (MouseEvent.MOUSE_OVER, button, __mouseX, __mouseY, target.__globalToLocal (targetPoint, localPoint), cast target);
-				event.bubbles = true;
-				__dispatchTarget (target, event);
+				__dispatchStack (event, stack);
 				
 			}
 			
 			__mouseOverTarget = target;
+			__mouseOutStack = stack;
 			
 		}
 		
@@ -2093,14 +2101,22 @@ class Stage extends DisplayObjectContainer implements IModule {
 			
 		}
 		
-		var r = (value & 0xFF0000) >>> 16;
-		var g = (value & 0x00FF00) >>> 8;
-		var b = (value & 0x0000FF);
+		if (__color != value) {
+			
+			var r = (value & 0xFF0000) >>> 16;
+			var g = (value & 0x00FF00) >>> 8;
+			var b = (value & 0x0000FF);
+			
+			__colorSplit[0] = r / 0xFF;
+			__colorSplit[1] = g / 0xFF;
+			__colorSplit[2] = b / 0xFF;
+			__colorString = "#" + StringTools.hex (value & 0xFFFFFF, 6);
+			__renderDirty = true;
+			__color = value;
+			
+		}
 		
-		__colorSplit = [ r / 0xFF, g / 0xFF, b / 0xFF ];
-		__colorString = "#" + StringTools.hex (value & 0xFFFFFF, 6);
-		
-		return __color = value;
+		return value;
 		
 	}
 	
