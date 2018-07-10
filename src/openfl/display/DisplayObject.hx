@@ -2,8 +2,6 @@ package openfl.display;
 
 
 import lime.graphics.cairo.Cairo;
-import lime.graphics.utils.ImageCanvasUtil;
-import lime.ui.MouseCursor;
 import lime.utils.ObjectPool;
 import openfl._internal.renderer.cairo.CairoBitmap;
 import openfl._internal.renderer.cairo.CairoDisplayObject;
@@ -33,6 +31,14 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.geom.Transform;
 import openfl.Vector;
+
+#if (lime >= "7.0.0")
+import lime._internal.graphics.ImageCanvasUtil; // TODO
+import lime.ui.Cursor;
+#else
+import lime.graphics.utils.ImageCanvasUtil;
+import lime.ui.MouseCursor in Cursor;
+#end
 
 #if (js && html5)
 import js.html.CanvasElement;
@@ -572,7 +578,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	}
 	
 	
-	private function __getCursor ():MouseCursor {
+	private function __getCursor ():Cursor {
 		
 		return null;
 		
@@ -1362,7 +1368,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 					
 					if (renderType == OPENGL) {
 						
-						__cacheBitmapRenderer = new OpenGLRenderer (cast (renderer, OpenGLRenderer).__gl, __cacheBitmapData);
+						__cacheBitmapRenderer = new OpenGLRenderer (renderer.__context, __cacheBitmapData);
 						
 					} else {
 						
@@ -1414,7 +1420,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 					parentRenderer.__suspendClipAndMask ();
 					childRenderer.__copyShader (parentRenderer);
 					
-					__cacheBitmapData.__setUVRect (childRenderer.__gl, 0, 0, filterWidth, filterHeight);
+					__cacheBitmapData.__setUVRect (childRenderer.__context, 0, 0, filterWidth, filterHeight);
 					childRenderer.__setRenderTarget (__cacheBitmapData);
 					if (__cacheBitmapData.image != null) __cacheBitmapData.__textureVersion = __cacheBitmapData.image.version + 1;
 					
@@ -1447,7 +1453,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 									__cacheBitmapData2.__textureVersion = __cacheBitmapData2.image.version + 1;
 								}
 							}
-							__cacheBitmapData2.__setUVRect (childRenderer.__gl, 0, 0, filterWidth, filterHeight);
+							__cacheBitmapData2.__setUVRect (childRenderer.__context, 0, 0, filterWidth, filterHeight);
 							bitmap2 = __cacheBitmapData2;
 						// } else {
 						// 	bitmap2 = bitmapData;
@@ -1462,7 +1468,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 									__cacheBitmapData3.__textureVersion = __cacheBitmapData3.image.version + 1;
 								}
 							}
-							__cacheBitmapData3.__setUVRect (childRenderer.__gl, 0, 0, filterWidth, filterHeight);
+							__cacheBitmapData3.__setUVRect (childRenderer.__context, 0, 0, filterWidth, filterHeight);
 							bitmap3 = __cacheBitmapData3;
 						}
 						
@@ -1620,7 +1626,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 				if (__cacheBitmapColorTransform == null) __cacheBitmapColorTransform = new ColorTransform ();
 				__cacheBitmapColorTransform.__copyFrom (__worldColorTransform);
 				
-				if (!__cacheBitmapColorTransform.__isDefault ()) {
+				if (!__cacheBitmapColorTransform.__isDefault () && __cacheBitmapRenderer.__type != OPENGL) {
 					
 					__cacheBitmapData.colorTransform (__cacheBitmapData.rect, __cacheBitmapColorTransform);
 					

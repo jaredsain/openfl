@@ -3,7 +3,6 @@ package openfl.display;
 
 import lime.graphics.opengl.ext.KHR_debug;
 import lime.graphics.opengl.GLFramebuffer;
-import lime.graphics.GLRenderContext;
 import lime.math.Matrix4;
 import lime.utils.Float32Array;
 import openfl._internal.renderer.opengl.GLMaskShader;
@@ -17,12 +16,22 @@ import openfl.geom.ColorTransform;
 import openfl.geom.Matrix;
 import openfl.geom.Rectangle;
 
+#if (lime >= "7.0.0")
+import lime.graphics.RenderContext;
+import lime.graphics.WebGLRenderContext;
+#else
+import lime.graphics.GLRenderContext;
+#end
+
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
 
+#if (lime < "7.0.0")
 @:access(lime._backend.html5.HTML5GLRenderContext)
+#end
+
 @:access(lime.graphics.GLRenderContext)
 @:access(openfl._internal.renderer.ShaderBuffer)
 @:access(openfl.display.BitmapData)
@@ -54,7 +63,9 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 	private static var __hasColorTransformValue = [ false ];
 	private static var __textureSizeValue = [ 0, 0. ];
 	
-	#if openfljs
+	#if (lime >= "7.0.0")
+	public var gl:WebGLRenderContext;
+	#elseif openfljs
 	public var gl:js.html.webgl.RenderingContext;
 	#else
 	public var gl:GLRenderContext;
@@ -73,7 +84,7 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 	private var __displayHeight:Int;
 	private var __displayWidth:Int;
 	private var __flipped:Bool;
-	private var __gl:GLRenderContext;
+	private var __gl:#if (lime >= "7.0.0") WebGLRenderContext #else GLRenderContext #end;
 	private var __height:Int;
 	private var __maskShader:GLMaskShader;
 	private var __matrix:Matrix4;
@@ -91,23 +102,26 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 	private var __width:Int;
 	
 	
-	private function new (gl:GLRenderContext, ?defaultRenderTarget:BitmapData) {
+	private function new (context:#if (lime >= "7.0.0") RenderContext #else GLRenderContext #end, ?defaultRenderTarget:BitmapData) {
 		
 		super ();
 		
-		#if openfljs
-		this.gl = gl.__context;
+		#if (lime >= "7.0.0")
+		gl = context.webgl;
+		__gl = gl;
 		#else
-		this.gl = gl;
+		gl = #if openfljs context.__context #else context #end;
+		__gl = context;
 		#end
+		
+		__context = context;
 		
 		this.__defaultRenderTarget = defaultRenderTarget;
 		this.__flipped = (__defaultRenderTarget == null);
-		this.__gl = gl;
 		
 		if (Graphics.maxTextureWidth == null) {
 			
-			Graphics.maxTextureWidth = Graphics.maxTextureHeight = __gl.getInteger (__gl.MAX_TEXTURE_SIZE);
+			Graphics.maxTextureWidth = Graphics.maxTextureHeight = __gl.getParameter (__gl.MAX_TEXTURE_SIZE);
 			
 		}
 		
@@ -513,9 +527,9 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 			
 			// TODO: Change of GL context?
 			
-			if (shader.gl == null) {
+			if (shader.__context == null) {
 				
-				shader.gl = __gl;
+				shader.__context = __context;
 				shader.__init ();
 				
 			}
@@ -536,9 +550,9 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 			
 			// TODO: Change of GL context?
 			
-			if (shader.gl == null) {
+			if (shader.__context == null) {
 				
-				shader.gl = __gl;
+				shader.__context = __context;
 				shader.__init ();
 				
 			}
@@ -559,9 +573,9 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 			
 			// TODO: Change of GL context?
 			
-			if (shader.gl == null) {
+			if (shader.__context == null) {
 				
-				shader.gl = __gl;
+				shader.__context = __context;
 				shader.__init ();
 				
 			}
@@ -808,7 +822,7 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 		if (source == null || shader == null) return;
 		if (__defaultRenderTarget == null) return;
 		
-		__gl.bindFramebuffer (__gl.FRAMEBUFFER, __defaultRenderTarget.__getFramebuffer (__gl));
+		__gl.bindFramebuffer (__gl.FRAMEBUFFER, __defaultRenderTarget.__getFramebuffer (__context));
 		
 		if (clear) {
 			
@@ -825,7 +839,7 @@ class OpenGLRenderer extends DisplayObjectRenderer {
 		applyMatrix (__getMatrix (source.__renderTransform));
 		updateShader ();
 		
-		__gl.bindBuffer (__gl.ARRAY_BUFFER, source.getBuffer (__gl));
+		__gl.bindBuffer (__gl.ARRAY_BUFFER, source.getBuffer (__context));
 		if (shader.__position != null) __gl.vertexAttribPointer (shader.__position.index, 3, __gl.FLOAT, false, 14 * Float32Array.BYTES_PER_ELEMENT, 0);
 		if (shader.__textureCoord != null) __gl.vertexAttribPointer (shader.__textureCoord.index, 2, __gl.FLOAT, false, 14 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
 		__gl.drawArrays (__gl.TRIANGLE_STRIP, 0, 4);
