@@ -1070,7 +1070,7 @@ class TextField extends InteractiveObject {
 		
 		for (group in __textEngine.textFormatRanges) {
 			
-			if ((group.start <= beginIndex && group.end > beginIndex) || (group.start < endIndex && group.end > endIndex)) {
+			if ((group.start <= beginIndex && group.end > beginIndex) || (group.start < endIndex && group.end >= endIndex)) {
 				
 				if (format == null) {
 					
@@ -1103,17 +1103,7 @@ class TextField extends InteractiveObject {
 			
 		}
 		
-		if (format == null)
-		{
-			if(defaultTextFormat != null)
-			{
-				format = defaultTextFormat.clone();
-			}
-			else
-			{
-				format = new TextFormat();
-			}
-		}
+		if (format == null) format = new TextFormat ();
 		return format;
 		
 	}
@@ -1320,7 +1310,7 @@ class TextField extends InteractiveObject {
 				
 			}
 			
-			if (nextRange == prevRange && nextRange != null) {
+			if (nextRange == prevRange) {
 				
 				// the new incoming text format range is completely within this existing range, let's divide it up
 				

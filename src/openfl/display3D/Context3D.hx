@@ -50,7 +50,6 @@ import openfl.utils.ByteArray;
 @:access(openfl.display.BitmapData)
 @:access(openfl.display.Bitmap)
 @:access(openfl.display.DisplayObjectRenderer)
-@:access(openfl.display.Shader)
 @:access(openfl.display.Stage)
 @:access(openfl.display.Stage3D)
 @:access(openfl.geom.Point)
@@ -547,7 +546,6 @@ import openfl.utils.ByteArray;
 	public function setProgram (program:Program3D):Void {
 		
 		__state.program = program;
-		__state.shader = null; // TODO: Merge this logic
 		
 		if (program != null) {
 			for (i in 0...program.__samplerStates.length) {
@@ -1131,24 +1129,7 @@ import openfl.utils.ByteArray;
 	
 	@:noCompletion private function __flushGLProgram ():Void {
 		
-		var shader = __state.shader;
 		var program = __state.program;
-		
-		if (#if openfl_disable_context_cache true #else __contextState.shader != shader #end) {
-			
-			// TODO: Merge this logic
-			
-			if (__contextState.shader != null) {
-				__contextState.shader.__disable ();
-			}
-			
-			if (shader != null) {
-				shader.__enable ();
-			}
-			
-			__contextState.shader = shader;
-			
-		}
 		
 		if (#if openfl_disable_context_cache true #else __contextState.program != program #end) {
 			
@@ -1432,7 +1413,8 @@ import openfl.utils.ByteArray;
 		
 		if (context != null && context != this && context.__frontBufferTexture != null && stage3D.visible) {
 			
-			// if (!__stage.__renderer.__cleared) __stage.__renderer.__clear ();
+			if (!__stage.__renderer.__cleared) clear (0, 0, 0, __stage.__transparent ? 0 : 1, 1, 0, Context3DClearMask.COLOR);
+			__stage.__renderer.__cleared = true;
 			
 			if (__renderStage3DProgram == null) {
 				
@@ -1454,10 +1436,7 @@ import openfl.utils.ByteArray;
 			}
 			
 			setProgram (__renderStage3DProgram);
-			
-			// TODO: Should multiple contexts blend together?
-			setBlendFactors (ONE, ZERO);
-			
+			setBlendFactors (ONE, ONE_MINUS_SOURCE_ALPHA);
 			setTextureAt (0, context.__frontBufferTexture);
 			setVertexBufferAt (0, stage3D.__vertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_3);
 			setVertexBufferAt (1, stage3D.__vertexBuffer, 3, Context3DVertexBufferFormat.FLOAT_2);
