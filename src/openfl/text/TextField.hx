@@ -1063,14 +1063,14 @@ class TextField extends InteractiveObject {
 		var format = null;
 		
 		if (beginIndex >= text.length || beginIndex < -1 || endIndex > text.length || endIndex < -1) throw new RangeError ("The supplied index is out of bounds");
-		if (beginIndex >= endIndex) return new TextFormat ();
+		// if (beginIndex >= endIndex) return new TextFormat ();
 		
 		if (beginIndex == -1) beginIndex = 0;
 		if (endIndex == -1) endIndex = text.length;
 		
 		for (group in __textEngine.textFormatRanges) {
 			
-			if ((group.start <= beginIndex && group.end > beginIndex) || (group.start < endIndex && group.end >= endIndex)) {
+			if ((group.start <= beginIndex && group.end > beginIndex) || (group.start < endIndex && group.end > endIndex) || (group.start==group.end && (group.start>=beginIndex||group.start<=endIndex))) {
 				
 				if (format == null) {
 					
@@ -1103,7 +1103,17 @@ class TextField extends InteractiveObject {
 			
 		}
 		
-		if (format == null) format = new TextFormat ();
+		if (format == null)
+		{
+			if(defaultTextFormat != null)
+			{
+				format = defaultTextFormat.clone();
+			}
+			else
+			{
+				format = new TextFormat();
+			}
+		}
 		return format;
 		
 	}
@@ -1310,7 +1320,7 @@ class TextField extends InteractiveObject {
 				
 			}
 			
-			if (nextRange == prevRange) {
+			if (nextRange == prevRange && nextRange != null) {
 				
 				// the new incoming text format range is completely within this existing range, let's divide it up
 				

@@ -116,7 +116,7 @@ class Tileset {
 	
 	public function getRect (id:Int):Rectangle {
 		
-		if (id < __data.length && id >= 0) {
+		if (id < __data.length && id >= 0 && __data[id] != null) {
 			
 			return new Rectangle (__data[id].x, __data[id].y, __data[id].width, __data[id].height);
 			
