@@ -7,8 +7,8 @@ import openfl.text.TextField;
 import openfl.text.TextFormat;
 
 #if gl_stats
-import openfl._internal.renderer.opengl.stats.GLStats;
-import openfl._internal.renderer.opengl.stats.DrawCallContext;
+import openfl._internal.renderer.context3D.stats.Context3DStats;
+import openfl._internal.renderer.context3D.stats.DrawCallContext;
 #end
 
 #if !openfl_debug
@@ -22,8 +22,8 @@ class FPS extends TextField {
 	
 	public var currentFPS (default, null):Int;
 	
-	private var cacheCount:Int;
-	private var times:Array <Float>;
+	@:noCompletion private var cacheCount:Int;
+	@:noCompletion private var times:Array <Float>;
 	
 	
 	public function new (x:Float = 10, y:Float = 10, color:Int = 0x000000) {
@@ -73,9 +73,9 @@ class FPS extends TextField {
 			text = "FPS: " + currentFPS;
 			
 			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
-				text += "\ntotalDC: " + GLStats.totalDrawCalls();
-				text += "\nstageDC: " + GLStats.contextDrawCalls(DrawCallContext.STAGE);
-				text += "\nstage3DDC: " + GLStats.contextDrawCalls(DrawCallContext.STAGE3D);
+				text += "\ntotalDC: " + Context3DStats.totalDrawCalls();
+				text += "\nstageDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE);
+				text += "\nstage3DDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE3D);
 			#end
 			
 		}

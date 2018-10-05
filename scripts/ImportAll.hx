@@ -21,9 +21,6 @@ import openfl.display.DisplayObjectRenderer;
 import openfl.display.DisplayObjectShader;
 import openfl.display.DOMElement;
 import openfl.display.DOMRenderer;
-#if (openfljs && !display)
-import openfl.display.DOMSprite;
-#end
 import openfl.display.FPS;
 import openfl.display.FrameLabel;
 import openfl.display.GradientType;
@@ -76,9 +73,6 @@ import openfl.display.StageDisplayState;
 import openfl.display.StageQuality;
 import openfl.display.StageScaleMode;
 import openfl.display.Tile;
-#if (openfljs && !display)
-import openfl.display.TileArray;
-#end
 import openfl.display.TileContainer;
 import openfl.display.Tilemap;
 import openfl.display.Tileset;
@@ -189,6 +183,9 @@ import openfl.net.URLRequestMethod;
 import openfl.net.URLStream;
 import openfl.net.URLVariables;
 import openfl.net.XMLSocket;
+import openfl.printing.PrintJob;
+import openfl.printing.PrintJobOptions;
+import openfl.printing.PrintJobOrientation;
 import openfl.profiler.Telemetry;
 import openfl.sensors.Accelerometer;
 import openfl.system.ApplicationDomain;
@@ -229,6 +226,7 @@ import openfl.utils.ByteArray;
 import openfl.utils.CompressionAlgorithm;
 import openfl.utils.Dictionary;
 import openfl.utils.Endian;
+import openfl.utils.Function;
 import openfl.utils.IAssetCache;
 import openfl.utils.IDataInput;
 import openfl.utils.IDataOutput;
@@ -240,5 +238,5 @@ import openfl.Memory;
 import openfl.Vector;
 
 #if !display
-import openfl._internal.swf.SWFLiteLibrary;
+import openfl._internal.formats.swf.SWFLiteLibrary;
 #end

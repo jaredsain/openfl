@@ -6,7 +6,7 @@ import haxe.PosInfos;
 import haxe.Timer;
 import lime.system.System;
 import lime.utils.Log;
-import openfl._internal.Lib in InternalLib;
+import openfl._internal.Lib as InternalLib;
 import openfl.display.Application;
 import openfl.display.MovieClip;
 import openfl.display.Stage;
@@ -16,9 +16,9 @@ import openfl.net.URLVariables;
 
 #if swf
 #if flash
-import openfl._internal.swf.SWFLibrary;
+import openfl._internal.formats.swf.SWFLibrary;
 #else
-import openfl._internal.swf.SWFLiteLibrary; // workaround
+import openfl._internal.formats.swf.SWFLiteLibrary; // workaround
 #end
 #end
 
@@ -38,13 +38,13 @@ import js.Browser;
 	public static var application (get, never):Application;
 	public static var current (get, never):MovieClip;
 	
-	private static var __lastTimerID:UInt = 0;
-	private static var __sentWarnings = new Map<String, Bool> ();
-	private static var __timers = new Map<UInt, Timer> ();
+	@:noCompletion private static var __lastTimerID:UInt = 0;
+	@:noCompletion private static var __sentWarnings = new Map<String, Bool> ();
+	@:noCompletion private static var __timers = new Map<UInt, Timer> ();
 	
 	
 	#if openfljs
-	private static function __init__ () {
+	@:noCompletion private static function __init__ () {
 		
 		untyped Object.defineProperties (Lib, {
 			"application": { get: function () { return Lib.get_application (); } },

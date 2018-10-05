@@ -1,11 +1,13 @@
-package openfl.net;
+package openfl.net; #if !flash
 
 
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
 import haxe.io.Eof;
 import haxe.io.Error;
+import haxe.Serializer;
 import haxe.Timer;
+import haxe.Unserializer;
 import openfl._internal.Lib;
 import openfl.errors.IOError;
 import openfl.errors.SecurityError;
@@ -26,7 +28,7 @@ import js.Browser;
 
 #if sys
 import sys.net.Host;
-import sys.net.Socket in SysSocket;
+import sys.net.Socket as SysSocket;
 #end
 
 #if !openfl_debug
@@ -46,19 +48,19 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	public var timeout:Int;
 	public var endian (get, set):Endian;
 	
-	private var __buffer:Bytes;
-	private var __connected:Bool;
-	private var __endian:Endian;
-	private var __host:String;
-	private var __input:ByteArray;
-	private var __output:ByteArray;
-	private var __port:Int;
-	private var __socket:#if sys SysSocket #else Dynamic #end;
-	private var __timestamp:Float;
+	@:noCompletion private var __buffer:Bytes;
+	@:noCompletion private var __connected:Bool;
+	@:noCompletion private var __endian:Endian;
+	@:noCompletion private var __host:String;
+	@:noCompletion private var __input:ByteArray;
+	@:noCompletion private var __output:ByteArray;
+	@:noCompletion private var __port:Int;
+	@:noCompletion private var __socket:#if sys SysSocket #else Dynamic #end;
+	@:noCompletion private var __timestamp:Float;
 	
 	
 	#if openfljs
-	private static function __init__ () {
+	@:noCompletion private static function __init__ () {
 		
 		untyped Object.defineProperties (Socket.prototype, {
 			"bytesAvailable": { get: untyped __js__ ("function () { return this.get_bytesAvailable (); }") },
@@ -314,11 +316,20 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	}
 	
 	
-	//public function readObject ():Dynamic {
-		//
-		//return __input.readObject ();
-		//
-	//}
+	public function readObject ():Dynamic {
+		
+		if (objectEncoding == HXSF) {
+			
+			return Unserializer.run (readUTF ());
+			
+		} else {
+			
+			// TODO: Add support for AMF if haxelib "format" is included
+			return null;
+			
+		}
+		
+	}
 	
 	
 	public function readShort ():Int {
@@ -489,11 +500,19 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	}
 	
 	
-	//public function writeObject (object:Dynamic):Void {
-		//
-		//__output.writeObject (object);
-		//
-	//}
+	public function writeObject (object:Dynamic):Void {
+		
+		if (objectEncoding == HXSF) {
+			
+			__output.writeUTF (Serializer.run (object));
+			
+		} else {
+			
+			// TODO: Add support for AMF if haxelib "format" is included
+			
+		}
+		
+	}
 	
 	
 	public function writeShort (value:Int):Void {
@@ -549,7 +568,7 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	
 	
 	
-	private function __cleanSocket ():Void {
+	@:noCompletion private function __cleanSocket ():Void {
 		
 		try {
 			
@@ -571,21 +590,21 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	
 	
 	
-	private function socket_onClose (_):Void {
+	@:noCompletion private function socket_onClose (_):Void {
 		
 		dispatchEvent (new Event (Event.CLOSE));
 		
 	}
 	
 	
-	private function socket_onError (e):Void {
+	@:noCompletion private function socket_onError (e):Void {
 		
 		dispatchEvent (new Event (IOErrorEvent.IO_ERROR));
 		
 	}
 	
 	
-	private function socket_onMessage (msg:Dynamic):Void {
+	@:noCompletion private function socket_onMessage (msg:Dynamic):Void {
 		
 		#if (js && html5)
 		if (__input.position == __input.length) {
@@ -618,7 +637,7 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	}
 	
 	
-	private function socket_onOpen (_):Void {
+	@:noCompletion private function socket_onOpen (_):Void {
 		
 		__connected = true;
 		dispatchEvent (new Event (Event.CONNECT));
@@ -626,7 +645,7 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	}
 	
 	
-	private function this_onEnterFrame (event:Event):Void {
+	@:noCompletion private function this_onEnterFrame (event:Event):Void {
 		
 		#if (js && html5)
 		
@@ -761,35 +780,35 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	
 	
 	
-	private function get_bytesAvailable ():Int {
+	@:noCompletion private function get_bytesAvailable ():Int {
 		
 		return __input.bytesAvailable;
 		
 	}
 	
 	
-	private function get_bytesPending ():Int {
+	@:noCompletion private function get_bytesPending ():Int {
 		
 		return __output.length;
 		
 	}
 	
 	
-	private function get_connected ():Bool {
+	@:noCompletion private function get_connected ():Bool {
 		
 		return __connected;
 		
 	}
 	
 	
-	private function get_endian ():Endian {
+	@:noCompletion private function get_endian ():Endian {
 		
 		return __endian;
 		
 	}
 	
 	
-	private function set_endian (value:Endian):Endian {
+	@:noCompletion private function set_endian (value:Endian):Endian {
 		
 		__endian = value;
 		
@@ -802,3 +821,8 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 	
 	
 }
+
+
+#else
+typedef Socket = flash.net.Socket;
+#end

@@ -9,7 +9,6 @@ import openfl.display.BitmapDataChannel;
 import openfl.display.CanvasRenderer;
 import openfl.display.Graphics;
 import openfl.events.Event;
-import openfl.filters.GlowFilter;
 import openfl.geom.Matrix;
 import openfl.geom.Rectangle;
 import openfl.text.TextField;
@@ -133,17 +132,11 @@ class CanvasTextField {
 					
 					if (!renderer.__allowSmoothing || (textEngine.antiAliasType == ADVANCED && textEngine.sharpness == 400)) {
 						
-						untyped (graphics.__context).mozImageSmoothingEnabled = false;
-						//untyped (graphics.__context).webkitImageSmoothingEnabled = false;
-						untyped (graphics.__context).msImageSmoothingEnabled = false;
-						untyped (graphics.__context).imageSmoothingEnabled = false;
+						graphics.__context.imageSmoothingEnabled = false;
 						
 					} else {
 						
-						untyped (graphics.__context).mozImageSmoothingEnabled = true;
-						//untyped (graphics.__context).webkitImageSmoothingEnabled = true;
-						untyped (graphics.__context).msImageSmoothingEnabled = true;
-						untyped (graphics.__context).imageSmoothingEnabled = true;
+						graphics.__context.imageSmoothingEnabled = true;
 						
 					}
 					
@@ -212,28 +205,6 @@ class CanvasTextField {
 						if (applyHack) {
 							
 							offsetY = group.format.size * 0.185;
-							
-						}
-						
-						if (textField.__filters != null) {
-							
-							// Hack, force outline
-							
-							if (Std.is (textField.__filters[0], GlowFilter)) {
-								
-								var glowFilter:GlowFilter = cast textField.__filters[0];
-								
-								var cacheAlpha = context.globalAlpha;
-								context.globalAlpha = cacheAlpha * glowFilter.alpha;
-								
-								context.strokeStyle = "#" + StringTools.hex (glowFilter.color & 0xFFFFFF, 6);
-								context.lineWidth = Math.max (glowFilter.blurX, glowFilter.blurY);
-								context.strokeText (text.substring (group.startIndex, group.endIndex), group.offsetX + scrollX - bounds.x, group.offsetY + offsetY + scrollY - bounds.y);
-								
-								context.strokeStyle = null;
-								context.globalAlpha = cacheAlpha;
-								
-							}
 							
 						}
 						

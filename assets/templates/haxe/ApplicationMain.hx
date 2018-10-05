@@ -20,8 +20,6 @@ import haxe.macro.Expr;
 	
 	public static function main () {
 		
-		#if (lime >= "7.0.0")
-		
 		lime.system.System.__registerEntryPoint ("::APP_FILE::", create);
 		
 		#if (js && html5)
@@ -32,74 +30,6 @@ import haxe.macro.Expr;
 		create (null);
 		#end
 		
-		#else
-		
-		var projectName = "::APP_FILE::";
-		
-		var config = {
-			
-			build: "::meta.buildNumber::",
-			company: "::meta.company::",
-			file: "::APP_FILE::",
-			fps: ::WIN_FPS::,
-			name: "::meta.title::",
-			orientation: "::WIN_ORIENTATION::",
-			packageName: "::meta.packageName::",
-			version: "::meta.version::",
-			windows: [
-				::foreach windows::
-				{
-					allowHighDPI: ::allowHighDPI::,
-					alwaysOnTop: ::alwaysOnTop::,
-					antialiasing: ::antialiasing::,
-					background: ::background::,
-					borderless: ::borderless::,
-					colorDepth: ::colorDepth::,
-					depthBuffer: ::depthBuffer::,
-					display: ::display::,
-					fullscreen: ::fullscreen::,
-					hardware: ::hardware::,
-					height: ::height::,
-					hidden: #if munit true #else ::hidden:: #end,
-					maximized: ::maximized::,
-					minimized: ::minimized::,
-					parameters: ::parameters::,
-					resizable: ::resizable::,
-					stencilBuffer: ::stencilBuffer::,
-					title: "::title::",
-					vsync: ::vsync::,
-					width: ::width::,
-					x: ::x::,
-					y: ::y::
-				},::end::
-			]
-			
-		};
-		
-		lime.system.System.__registerEntryPoint (projectName, create, config);
-		
-		#if sys
-		lime.system.System.__parseArguments (config);
-		#end
-		
-		#if (hxtelemetry && !macro)
-		var telemetry = new hxtelemetry.HxTelemetry.Config ();
-		telemetry.allocations = ::if (config.hxtelemetry != null)::("::config.hxtelemetry.allocations::" == "true")::else::true::end::;
-		telemetry.host = ::if (config.hxtelemetry != null)::"::config.hxtelemetry.host::"::else::"localhost"::end::;
-		telemetry.app_name = config.name;
-		Reflect.setField (config, "telemetry", telemetry);
-		#end
-		
-		#if (js && html5)
-		#if (munit || utest)
-		lime.system.System.embed (projectName, null, ::WIN_WIDTH::, ::WIN_HEIGHT::, config);
-		#end
-		#else
-		create (config);
-		#end
-		
-		#end
-		
 	}
 	
 	
@@ -107,7 +37,6 @@ import haxe.macro.Expr;
 		
 		var app = new openfl.display.Application ();
 		
-		#if (lime >= "7.0.0")
 		ManifestResources.init (config);
 		
 		app.meta["build"] = "::meta.buildNumber::";
@@ -115,7 +44,14 @@ import haxe.macro.Expr;
 		app.meta["file"] = "::APP_FILE::";
 		app.meta["name"] = "::meta.title::";
 		app.meta["packageName"] = "::meta.packageName::";
+		app.meta["version"] = "::meta.version::";
 		
+		::if (config.hxtelemetry != null)::#if hxtelemetry
+		app.meta["hxtelemetry-allocations"] = "::config.hxtelemetry.allocations::";
+		app.meta["hxtelemetry-host"] = "::config.hxtelemetry.host::";
+		#end::end::
+		
+		#if !flash
 		::foreach windows::
 		var attributes:lime.ui.WindowAttributes = {
 			
@@ -180,36 +116,36 @@ import haxe.macro.Expr;
 		
 		app.createWindow (attributes);
 		::end::
+		#elseif !air
 		
-		var preloader = app.preloader;
-		
-		#else
-		
-		app.create (config);
-		
-		ManifestResources.init (config);
-		
-		var preloader = getPreloader ();
-		app.setPreloader (preloader);
-		preloader.create (config);
+		app.window.context.attributes.background = ::WIN_BACKGROUND::;
+		app.window.frameRate = ::WIN_FPS::;
 		
 		#end
+		
+		var preloader = getPreloader ();
+		app.preloader.onProgress.add (function (loaded, total) {
+			@:privateAccess preloader.update (loaded, total);
+		});
+		app.preloader.onComplete.add (function () {
+			@:privateAccess preloader.start ();
+		});
 		
 		preloader.onComplete.add (start.bind (cast (app.window, openfl.display.Window).stage));
 		
 		for (library in ManifestResources.preloadLibraries) {
 			
-			preloader.addLibrary (library);
+			app.preloader.addLibrary (library);
 			
 		}
 		
 		for (name in ManifestResources.preloadLibraryNames) {
 			
-			preloader.addLibraryName (name);
+			app.preloader.addLibraryName (name);
 			
 		}
 		
-		preloader.load ();
+		app.preloader.load ();
 		
 		var result = app.exec ();
 		

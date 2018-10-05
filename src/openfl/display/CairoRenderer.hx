@@ -1,4 +1,4 @@
-package openfl.display;
+package openfl.display; #if !flash
 
 
 import lime.graphics.cairo.Cairo;
@@ -27,11 +27,11 @@ class CairoRenderer extends DisplayObjectRenderer {
 	
 	public var cairo:CairoRenderContext;
 	
-	private var __matrix:Matrix;
-	private var __matrix3:Matrix3;
+	@:noCompletion private var __matrix:Matrix;
+	@:noCompletion private var __matrix3:Matrix3;
 	
 	
-	private function new (cairo:Cairo) {
+	@:noCompletion private function new (cairo:Cairo) {
 		
 		super ();
 		
@@ -81,7 +81,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __clear ():Void {
+	@:noCompletion private override function __clear ():Void {
 		
 		if (cairo == null) return;
 		
@@ -102,14 +102,14 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __popMask ():Void {
+	@:noCompletion private override function __popMask ():Void {
 		
 		cairo.restore ();
 		
 	}
 	
 	
-	private override function __popMaskObject (object:DisplayObject, handleScrollRect:Bool = true):Void {
+	@:noCompletion private override function __popMaskObject (object:DisplayObject, handleScrollRect:Bool = true):Void {
 		
 		if (!object.__isCacheBitmapRender && object.__mask != null) {
 			
@@ -126,14 +126,14 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __popMaskRect ():Void {
+	@:noCompletion private override function __popMaskRect ():Void {
 		
 		cairo.restore ();
 		
 	}
 	
 	
-	private override function __pushMask (mask:DisplayObject):Void {
+	@:noCompletion private override function __pushMask (mask:DisplayObject):Void {
 		
 		cairo.save ();
 		
@@ -146,7 +146,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __pushMaskObject (object:DisplayObject, handleScrollRect:Bool = true):Void {
+	@:noCompletion private override function __pushMaskObject (object:DisplayObject, handleScrollRect:Bool = true):Void {
 		
 		if (handleScrollRect && object.__scrollRect != null) {
 			
@@ -163,7 +163,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __pushMaskRect (rect:Rectangle, transform:Matrix):Void {
+	@:noCompletion private override function __pushMaskRect (rect:Rectangle, transform:Matrix):Void {
 		
 		cairo.save ();
 		
@@ -176,7 +176,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __render (object:IBitmapDrawable):Void {
+	@:noCompletion private override function __render (object:IBitmapDrawable):Void {
 		
 		if (cairo == null) return;
 		
@@ -185,21 +185,9 @@ class CairoRenderer extends DisplayObjectRenderer {
 	}
 	
 	
-	private override function __renderStage3D (stage:Stage):Void {
+	@:noCompletion private override function __setBlendMode (value:BlendMode):Void {
 		
-		if (cairo == null) return;
-		
-		for (stage3D in stage.stage3Ds) {
-			
-			stage3D.__renderCairo (stage, this);
-			
-		}
-		
-	}
-	
-	
-	private override function __setBlendMode (value:BlendMode):Void {
-		
+		if (__overrideBlendMode != null) value = __overrideBlendMode;
 		if (__blendMode == value) return;
 		
 		__blendMode = value;
@@ -208,7 +196,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 			
 			case ADD:
 				
-				cairo.operator = CairoOperator.ADD;
+				cairo.setOperator (CairoOperator.ADD);
 			
 			//case ALPHA:
 				
@@ -216,11 +204,11 @@ class CairoRenderer extends DisplayObjectRenderer {
 			
 			case DARKEN:
 				
-				cairo.operator = CairoOperator.DARKEN;
+				cairo.setOperator (CairoOperator.DARKEN);
 			
 			case DIFFERENCE:
 				
-				cairo.operator = CairoOperator.DIFFERENCE;
+				cairo.setOperator (CairoOperator.DIFFERENCE);
 			
 			//case ERASE:
 				
@@ -228,7 +216,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 			
 			case HARDLIGHT:
 				
-				cairo.operator = CairoOperator.HARD_LIGHT;
+				cairo.setOperator (CairoOperator.HARD_LIGHT);
 			
 			//case INVERT:
 				
@@ -236,23 +224,23 @@ class CairoRenderer extends DisplayObjectRenderer {
 			
 			case LAYER:
 				
-				cairo.operator = CairoOperator.OVER;
+				cairo.setOperator (CairoOperator.OVER);
 			
 			case LIGHTEN:
 				
-				cairo.operator = CairoOperator.LIGHTEN;
+				cairo.setOperator (CairoOperator.LIGHTEN);
 			
 			case MULTIPLY:
 				
-				cairo.operator = CairoOperator.MULTIPLY;
+				cairo.setOperator (CairoOperator.MULTIPLY);
 			
 			case OVERLAY:
 				
-				cairo.operator = CairoOperator.OVERLAY;
+				cairo.setOperator (CairoOperator.OVERLAY);
 			
 			case SCREEN:
 				
-				cairo.operator = CairoOperator.SCREEN;
+				cairo.setOperator (CairoOperator.SCREEN);
 			
 			//case SHADER:
 				
@@ -264,7 +252,7 @@ class CairoRenderer extends DisplayObjectRenderer {
 			
 			default:
 				
-				cairo.operator = CairoOperator.OVER;
+				cairo.setOperator (CairoOperator.OVER);
 			
 		}
 		
@@ -272,3 +260,8 @@ class CairoRenderer extends DisplayObjectRenderer {
 	
 	
 }
+
+
+#else
+typedef CairoRenderer = Dynamic;
+#end

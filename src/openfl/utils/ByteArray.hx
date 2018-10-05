@@ -13,24 +13,18 @@ import lime.app.Future;
 import lime.system.System;
 import lime.utils.ArrayBuffer;
 import lime.utils.BytePointer;
-import lime.utils.Bytes in LimeBytes;
+import lime.utils.Bytes as LimeBytes;
 import lime.utils.DataPointer;
 import openfl.errors.EOFError;
 import openfl.net.ObjectEncoding;
 
-#if (lime < "7.0.0")
-import lime.utils.compress.Deflate;
-import lime.utils.compress.LZMA;
-import lime.utils.compress.Zlib;
-#end
-
 #if format
-import format.amf.Reader in AMFReader;
-import format.amf.Tools in AMFTools;
-import format.amf.Writer in AMFWriter;
-import format.amf3.Reader in AMF3Reader;
-import format.amf3.Tools in AMF3Tools;
-import format.amf3.Writer in AMF3Writer;
+import format.amf.Reader as AMFReader;
+import format.amf.Tools as AMFTools;
+import format.amf.Writer as AMFWriter;
+import format.amf3.Reader as AMF3Reader;
+import format.amf3.Tools as AMF3Tools;
+import format.amf3.Writer as AMF3Writer;
 #end
 
 @:access(haxe.io.Bytes)
@@ -43,7 +37,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 	
 	public static var defaultObjectEncoding:ObjectEncoding = ObjectEncoding.DEFAULT;
 	
-	private static var __bytePointer = new BytePointer ();
+	@:noCompletion private static var __bytePointer = new BytePointer ();
 	
 	public var length (get, set):Int;
 	
@@ -312,28 +306,25 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 @:noDebug
 #end
 
-#if (lime >= "7.0.0")
 @:autoBuild(lime._internal.macros.AssetsMacro.embedByteArray())
-#else
-@:autoBuild(lime._macros.AssetsMacro.embedByteArray())
-#end
+
 
 @:noCompletion @:dox(hide) class ByteArrayData extends Bytes implements IDataInput implements IDataOutput {
 	
 	
-	private static var __defaultEndian:Endian = null;
+	@:noCompletion private static var __defaultEndian:Endian = null;
 	
 	public var bytesAvailable (get, never):UInt;
 	public var endian (get, set):Endian;
 	public var objectEncoding:ObjectEncoding;
 	public var position:Int;
 	
-	private var __endian:Endian;
-	private var __length:Int;
+	@:noCompletion private var __endian:Endian;
+	@:noCompletion private var __length:Int;
 	
 	
 	#if lime_bytes_length_getter
-	private static function __init__ () {
+	@:noCompletion private static function __init__ () {
 		
 		untyped global.Object.defineProperties (ByteArrayData.prototype, {
 			"bytesAvailable": { get: untyped __js__ ("function () { return this.get_bytesAvailable (); }") },
@@ -427,9 +418,9 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 		
 		var bytes = switch (algorithm) {
 			
-			case CompressionAlgorithm.DEFLATE: #if (lime >= "7.0.0") limeBytes.compress (DEFLATE) #else Deflate.compress (this) #end;
-			case CompressionAlgorithm.LZMA: #if (lime >= "7.0.0") limeBytes.compress (LZMA) #else LZMA.compress (this) #end;
-			default: #if (lime >= "7.0.0") limeBytes.compress (ZLIB) #else Zlib.compress (this) #end;
+			case CompressionAlgorithm.DEFLATE: limeBytes.compress (DEFLATE);
+			case CompressionAlgorithm.LZMA: limeBytes.compress (LZMA);
+			default: limeBytes.compress (ZLIB);
 			
 		}
 		
@@ -775,9 +766,9 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 		
 		var bytes = switch (algorithm) {
 			
-			case CompressionAlgorithm.DEFLATE: #if (lime >= "7.0.0") limeBytes.compress (DEFLATE) #else Deflate.compress (this) #end;
-			case CompressionAlgorithm.LZMA: #if (lime >= "7.0.0") limeBytes.compress (LZMA) #else LZMA.compress (this) #end;
-			default: #if (lime >= "7.0.0") limeBytes.compress (ZLIB) #else Zlib.compress (this) #end;
+			case CompressionAlgorithm.DEFLATE: limeBytes.decompress (DEFLATE);
+			case CompressionAlgorithm.LZMA: limeBytes.decompress (LZMA);
+			default: limeBytes.decompress (ZLIB);
 			
 		};
 		
@@ -924,7 +915,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 			
 			default:
 				
-				return null;
+				return;
 			
 		}
 		
@@ -975,7 +966,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 	}
 	
 	
-	private function __fromBytes (bytes:Bytes):Void {
+	@:noCompletion private function __fromBytes (bytes:Bytes):Void {
 		
 		__setData (bytes);
 		#if lime_bytes_length_getter l = bytes.l #else length = bytes.length #end;
@@ -983,7 +974,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 	}
 	
 	
-	private function __resize (size:Int) {
+	@:noCompletion private function __resize (size:Int) {
 		
 		if (size > __length) {
 			
@@ -1014,7 +1005,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData {
 	}
 	
 	
-	private inline function __setData (bytes:Bytes):Void {
+	@:noCompletion private inline function __setData (bytes:Bytes):Void {
 		
 		#if eval
 		// TODO: Not quite correct, but this will probably
@@ -1146,7 +1137,8 @@ extern class ByteArrayData implements IDataOutput implements IDataInput implemen
 	 * read methods each time you access a ByteArray object to ensure that you
 	 * are reading valid data.
 	 */
-	#if (flash && !display)
+	// #if (flash && !display)
+	#if flash
 	public var bytesAvailable (default, never):UInt;
 	#else
 	public var bytesAvailable (get, never):UInt; private inline function get_bytesAvailable ():UInt { return 0; }
@@ -1156,13 +1148,14 @@ extern class ByteArrayData implements IDataOutput implements IDataInput implemen
 	 * Changes or reads the byte order for the data; either
 	 * `Endian.BIG_ENDIAN` or `Endian.LITTLE_ENDIAN`.
 	 */
-	#if (flash && !display)
+	// #if (flash && !display)
+	#if flash
 	public var endian:Endian;
 	#else
 	public var endian (get, set):Endian;
 	
-	private function get_endian ():Endian;
-	private function set_endian (value:Endian):Endian;
+	@:noCompletion private function get_endian ():Endian;
+	@:noCompletion private function set_endian (value:Endian):Endian;
 	#end
 	
 	/**
