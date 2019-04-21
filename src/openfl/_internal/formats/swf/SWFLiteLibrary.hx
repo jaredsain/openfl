@@ -112,6 +112,8 @@ import openfl.utils.AssetManifest;
 					}
 				}
 			}
+
+			alphaCheck.set(id, true);
 		}
 
 		return super.getImage(id);
@@ -253,6 +255,10 @@ import openfl.utils.AssetManifest;
 							});
 
 						return promise.future;
+					}
+					else
+					{
+						alphaCheck.set(id, true);
 					}
 				}
 			}

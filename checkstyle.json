@@ -4,7 +4,20 @@
 	"defaultSeverity": "INFO",
 	"baseDefines": [],
 	"version": 1,
-	"exclude": {},
+	"exclude": {
+		"all": [
+			"assets",
+			"externs",
+			"lib",
+			"node_modules",
+			"scripts",
+			"test"
+		],
+		"path": "RELATIVE_TO_PROJECT",
+		"FieldDocComment": [
+			"src/openfl/_internal"
+		]
+	},
 	"checks": [
 		{
 			"props": {},
@@ -17,7 +30,8 @@
 		{
 			"props": {
 				"policy": "aligned",
-				"allowSingleline": true
+				"allowSingleline": true,
+				"severity": "IGNORE"
 			},
 			"type": "ConditionalCompilation"
 		},
@@ -64,7 +78,9 @@
 			"type": "DocCommentStyle"
 		},
 		{
-			"props": {},
+			"props": {
+				"severity": "IGNORE"
+			},
 			"type": "Dynamic"
 		},
 		{
@@ -97,14 +113,15 @@
 					"betweenAbstractVars"
 				],
 				"atleast": [],
-				"skipSingleLineTypes": true
+				"skipSingleLineTypes": true,
+				"severity": "IGNORE"
 			},
 			"type": "ExtendedEmptyLines"
 		},
 		{
 			"props": {
 				"requireParams": false,
-				"fieldType": "FUNCTIONS",
+				"fieldType": "BOTH",
 				"requireReturn": false,
 				"ignoreOverride": true,
 				"tokens": [
@@ -124,7 +141,8 @@
 		},
 		{
 			"props": {
-				"max": 2200
+				"max": 2200,
+				"severity": "IGNORE"
 			},
 			"type": "FileLength"
 		},
@@ -190,7 +208,8 @@
 			"props": {
 				"maxPrivate": 55,
 				"maxPublic": 55,
-				"maxTotal": 105
+				"maxTotal": 105,
+				"severity": "IGNORE"
 			},
 			"type": "MethodCount"
 		},
@@ -231,7 +250,8 @@
 				"bitwiseOpPolicy": "around",
 				"arithmeticOpPolicy": "around",
 				"compareOpPolicy": "around",
-				"arrowPolicy": "around"
+				"arrowPolicy": "around",
+				"severity": "IGNORE"
 			},
 			"type": "OperatorWhitespace"
 		},
@@ -274,7 +294,8 @@
 					"++",
 					"--"
 				],
-				"option": "eol"
+				"option": "eol",
+				"severity": "IGNORE"
 			},
 			"type": "OperatorWrap"
 		},
@@ -317,7 +338,8 @@
 		{
 			"props": {
 				"ignoreFormat": "^$",
-				"max": 11
+				"max": 11,
+				"severity": "IGNORE"
 			},
 			"type": "ReturnCount"
 		},
@@ -429,7 +451,9 @@
 			"type": "TypeDocComment"
 		},
 		{
-			"props": {},
+			"props": {
+				"severity": "IGNORE"
+			},
 			"type": "UnnecessaryConstructor"
 		},
 		{

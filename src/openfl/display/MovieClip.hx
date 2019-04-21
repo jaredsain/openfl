@@ -648,10 +648,17 @@ class MovieClip extends Sprite #if (openfl_dynamic && haxe_ver < "4.0.0") implem
 						}
 						catch (e:Dynamic)
 						{
-							Log.info("Error evaluating frame script\n " + e + "\n" + haxe.CallStack.exceptionStack().map(function(a)
+							Log.info("Error evaluating frame script\n "
+								+ e
+								+ "\n"
+								+ haxe.CallStack.exceptionStack().map(function(a)
 								{
 									return untyped a[2];
-								}).join("\n") + "\n" + e.stack + "\n" + untyped script.toString());
+								}).join("\n")
+								+ "\n"
+								+ e.stack
+								+ "\n"
+								+ untyped script.toString());
 						}
 					}
 
@@ -662,8 +669,8 @@ class MovieClip extends Sprite #if (openfl_dynamic && haxe_ver < "4.0.0") implem
 				{
 					if (__symbol.className != null)
 					{
-						Log.warn("Unable to evaluate frame script source for symbol \"" + __symbol.className + "\" frame " + frame + "\n" + frameData
-							.scriptSource);
+						Log.warn("Unable to evaluate frame script source for symbol \"" + __symbol.className + "\" frame " + frame + "\n"
+							+ frameData.scriptSource);
 					}
 					else
 					{
@@ -705,8 +712,8 @@ class MovieClip extends Sprite #if (openfl_dynamic && haxe_ver < "4.0.0") implem
 						for (activeInstance in __activeInstances)
 						{
 							if (activeInstance.displayObject != null
-									&& activeInstance.characterID == frameObject.symbol
-									&& activeInstance.depth == frameObject.depth)
+								&& activeInstance.characterID == frameObject.symbol
+								&& activeInstance.depth == frameObject.depth)
 							{
 								// TODO: Fix duplicates in exporter
 								instance = activeInstance;
@@ -728,6 +735,7 @@ class MovieClip extends Sprite #if (openfl_dynamic && haxe_ver < "4.0.0") implem
 							{
 								displayObject.parent = this;
 								displayObject.stage = stage;
+
 								if (stage != null) displayObject.dispatchEvent(new Event(Event.ADDED_TO_STAGE, false, false));
 
 								instance = new FrameSymbolInstance(frame, frameObject.id, frameObject.symbol, frameObject.depth, displayObject, frameObject
@@ -936,7 +944,7 @@ class MovieClip extends Sprite #if (openfl_dynamic && haxe_ver < "4.0.0") implem
 
 		if (frameObject.cacheAsBitmap != null)
 		{
-			// displayObject.cacheAsBitmap = frameObject.cacheAsBitmap;
+			displayObject.cacheAsBitmap = frameObject.cacheAsBitmap;
 		}
 
 		#if (openfljs || ((openfl_dynamic || openfl_dynamic_fields_only) && haxe_ver <= "4.0.0"))

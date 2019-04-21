@@ -11,6 +11,7 @@ package openfl.system;
 #end
 class Security
 {
+	#if false
 	/**
 		The file is running in an AIR application, and it was installed with
 		the package (the AIR file) for that application. This content is
@@ -18,6 +19,7 @@ class Security
 		application content is installed).
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public static var APPLICATION:String;
+	#end
 
 	/**
 		The file is a local file and has been trusted by the user, using
@@ -50,7 +52,11 @@ class Security
 		sandbox rules.
 	**/
 	public static inline var REMOTE:String = "remote";
-	public static var disableAVM1Loading:Bool;
+
+	/**
+		Undocumented property
+	**/
+	@:noCompletion @:dox(hide) public static var disableAVM1Loading:Bool;
 
 	/**
 		Determines how Flash Player or AIR chooses the domain to use for
@@ -91,12 +97,15 @@ class Security
 							  decision about player settings.
 	**/
 	public static var exactSettings:Bool;
+
+	#if false
 	/**
 		Get the page domain containing the swf. For security reasons, the
 		method does not return the full URL, only the page domain, such as
 		http://www.example.com.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public static var pageDomain (default, null):String;
+	#end
 
 	/**
 		Indicates the type of security sandbox in which the calling file is
@@ -199,7 +208,7 @@ class Security
 		| 5 or earlier | No | No | N/A | N/A |
 		| 6 | Yes, if superdomains don't match | No | The SWF file being accessed, or any SWF file with the same superdomain as the SWF file being accessed | <ul><li>Text-based domain (mysite.com)</li><li>IP address (192.168.1.1)</li></ul> |
 		| 7 | Yes, if domains don't match exactly | Yes, if performing HTTP-to-HTTPS access (even if domains match exactly) | The SWF file being accessed, or any SWF file with exactly the same domain as the SWF file being accessed | <ul><li>Text-based domain (mysite.com)</li><li>IP address (192.168.1.1)</li></ul> |
-		| 8 or later | Yes, if domains don't match exactly | Yes, if performing HTTP-to-HTTPS access (even if domains match exactly) | SWF file being accessed | <ul><li>Text-based domain (mysite.com)</li><li>IP address (192.168.1.1)</li><li>Wildcard (~~)</li></ul> |
+		| 8 or later | Yes, if domains don't match exactly | Yes, if performing HTTP-to-HTTPS access (even if domains match exactly) | SWF file being accessed | <ul><li>Text-based domain (mysite.com)</li><li>IP address (192.168.1.1)</li><li>Wildcard (*)</li></ul> |
 
 		The versions that control the behavior of Flash Player are _SWF
 		versions_ (the published version of a SWF file), not the version of
@@ -254,17 +263,17 @@ class Security
 		`Security.allowDomain()`. Calling `Security.allowDomain()` previously
 		opened up the entire domain of the calling SWF file.
 		* Support has been added for wildcard values with
-		`Security.allowDomain("~~")` and `Security.allowInsecureDomain("~~")`.
-		The wildcard (~~) value permits cross-scripting operations where the
+		`Security.allowDomain("*")` and `Security.allowInsecureDomain("*")`.
+		The wildcard (*) value permits cross-scripting operations where the
 		accessing file is any file at all, loaded from anywhere. Think of the
 		wildcard as a global permission. Wildcard permissions are required to
 		enable certain kinds of operations under the local file security
 		rules. Specifically, for a local SWF file with network-access
 		permissions to script a SWF file on the Internet, the Internet SWF
-		file being accessed must call `Security.allowDomain("~~")`, reflecting
+		file being accessed must call `Security.allowDomain("*")`, reflecting
 		that the origin of a local SWF file is unknown. (If the Internet SWF
 		file is loaded from an HTTPS URL, the Internet SWF file must instead
-		call `Security.allowInsecureDomain("~~")`.)
+		call `Security.allowInsecureDomain("*")`.)
 
 		Occasionally, you may encounter the following situation: You load a
 		child SWF file from a different domain and want to allow the child SWF
@@ -276,8 +285,10 @@ class Security
 		object that you pass to `Loader.load()`. For example, if you load a
 		child SWF file into a parent SWF, you can access the
 		`contentLoaderInfo` property of the Loader object for the parent SWF:
-		<codeblock
-		xml:space="preserve">Security.allowDomain(loader.contentLoaderInfo.url)```
+
+		```as3
+		Security.allowDomain(loader.contentLoaderInfo.url)
+		```
 
 		Make sure that you wait until the child SWF file begins loading to get
 		the correct value of the `url` property. To determine when the child
@@ -293,7 +304,7 @@ class Security
 		the child loads.
 
 		If you are publishing for Flash Player 8 or later, you can also handle
-		these situations by calling `Security.allowDomain("~~")`. However,
+		these situations by calling `Security.allowDomain("*")`. However,
 		this can sometimes be a dangerous shortcut, because it allows the
 		calling SWF file to be accessed by any other SWF file from any domain.
 		It is usually safer to use the `_url` property.
@@ -309,7 +320,7 @@ class Security
 							  application security sandbox cannot cross-script
 							  content in the application security sandbox.
 	**/
-	public static function allowDomain(?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Void {}
+	public static function allowDomain(p1:Dynamic = null, p2:Dynamic = null, p3:Dynamic = null, p4:Dynamic = null, p5:Dynamic = null):Void {}
 
 	/**
 		Lets SWF files and HTML files in the identified domains access objects
@@ -463,7 +474,7 @@ class Security
 							  cannot cross-script content in the application
 							  security sandbox.
 	**/
-	public static function allowInsecureDomain(?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Void {}
+	public static function allowInsecureDomain(p1:Dynamic = null, p2:Dynamic = null, p3:Dynamic = null, p4:Dynamic = null, p5:Dynamic = null):Void {}
 
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public static function duplicateSandboxBridgeInputArguments (toplevel:Dynamic, args:Array<Dynamic>):Array<Dynamic>;
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public static function duplicateSandboxBridgeOutputArgument (toplevel:Dynamic, arg:Dynamic):Dynamic;
@@ -477,8 +488,11 @@ class Security
 		request that requires a policy file is made.
 		With `Security.loadPolicyFile()`, Flash Player or AIR can load policy
 		files from arbitrary locations, as shown in the following example:
-		<codeblock xml:space="preserve">
-		Security.loadPolicyFile("http://www.example.com/sub/dir/pf.xml"); ```
+
+		```as3
+		Security.loadPolicyFile("http://www.example.com/sub/dir/pf.xml");
+		```
+
 		This causes Flash Player or AIR to attempt to retrieve a policy file
 		from the specified URL. Any permissions granted by the policy file at
 		that location will apply to all content at the same level or lower in
@@ -486,18 +500,29 @@ class Security
 
 		For example, following the previous code, these lines do not throw an
 		exception:
-		<codeblock xml:space="preserve"> import openfl.net.~~; var
-		request:URLRequest = new
-		URLRequest("http://www.example.com/sub/dir/vars.txt"); var
-		loader:URLLoader = new URLLoader(); loader.load(request); var
-		loader2:URLLoader = new URLLoader(); var request2:URLRequest = new
-		URLRequest("http://www.example.com/sub/dir/deep/vars2.txt");
-		loader2.load(request2); ```
+
+		```haxe
+		import openfl.net.*;
+
+		var request = new URLRequest("http://www.example.com/sub/dir/vars.txt");
+		var loader = new URLLoader();
+		loader.load(request);
+
+		var loader2 = new URLLoader();
+		var request2 = new URLRequest("http://www.example.com/sub/dir/deep/vars2.txt");
+		loader2.load(request2);
+		```
+
 		However, the following code does throw a security exception:
-		<codeblock xml:space="preserve"> import openfl.net.~~; var
-		request3:URLRequest = new
-		URLRequest("http://www.example.com/elsewhere/vars3.txt"); var
-		loader3:URLLoader = new URLLoader(); loader3.load(request3); ```
+
+		```haxe
+		import openfl.net.*;
+
+		var request3 = new URLRequest("http://www.example.com/elsewhere/vars3.txt");
+		var loader3 = new URLLoader();
+		loader3.load(request3);
+		```
+
 		You can use `loadPolicyFile()` to load any number of policy files.
 		When considering a request that requires a policy file, Flash Player
 		or AIR always waits for the completion of any policy file downloads
@@ -522,8 +547,11 @@ class Security
 		you retrieve policy files directly from an XMLSocket server, as shown
 		in the following example. Socket connections are not subject to the
 		reserved port restriction described above.
-		<codeblock xml:space="preserve">
-		Security.loadPolicyFile("xmlsocket://foo.com:414"); ```
+
+		```haxe
+		Security.loadPolicyFile("xmlsocket://foo.com:414");
+		```
+
 		This causes Flash Player or AIR to attempt to retrieve a policy file
 		from the specified host and port. Upon establishing a connection with
 		the specified port, Flash Player or AIR transmits
@@ -548,6 +576,8 @@ class Security
 	{
 		// var res = haxe.Http.requestUrl( url );
 	}
+
+	#if false
 	/**
 		Displays the Security Settings panel in Flash Player. This method does
 		not apply to content in Adobe AIR; calling it in an AIR application
@@ -558,6 +588,7 @@ class Security
 					 this parameter, `SecurityPanel.DEFAULT` is used.
 	**/
 	// @:noCompletion @:dox(hide) public static function showSettings (panel:openfl.system.SecurityPanel = null):Void;
+	#end
 }
 #else
 typedef Security = flash.system.Security;

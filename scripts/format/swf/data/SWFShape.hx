@@ -309,12 +309,8 @@ class SWFShape
 						}
 						// Check if all styles are reset to 0.
 						// This (probably) means that a new group starts with the next record
-						if (styleChangeRecord.stateLineStyle &&
-							styleChangeRecord.lineStyle == 0 &&
-							styleChangeRecord.stateFillStyle0 &&
-							styleChangeRecord.fillStyle0 == 0 &&
-							styleChangeRecord.stateFillStyle1 &&
-							styleChangeRecord.fillStyle1 == 0)
+						if (styleChangeRecord.stateLineStyle && styleChangeRecord.lineStyle == 0 && styleChangeRecord.stateFillStyle0
+							&& styleChangeRecord.fillStyle0 == 0 && styleChangeRecord.stateFillStyle1 && styleChangeRecord.fillStyle1 == 0)
 						{
 							cleanEdgeMap(currentFillEdgeMap);
 							cleanEdgeMap(currentLineEdgeMap);
@@ -500,8 +496,9 @@ class SWFShape
 									var m:SWFMatrix = fillStyle.bitmapMatrix;
 									matrix = new Matrix(m.scaleX / 20, m.rotateSkew0 / 20, m.rotateSkew1 / 20, m.scaleY / 20, m.translateX / 20, m
 										.translateY / 20);
-									handler.beginBitmapFill(fillStyle.bitmapId, matrix, (fillStyle.type == 0x40 || fillStyle.type == 0x42),
-										(fillStyle.type == 0x40 || fillStyle.type == 0x41));
+									handler.beginBitmapFill(fillStyle
+										.bitmapId, matrix, (fillStyle.type == 0x40 || fillStyle.type == 0x42), (fillStyle.type == 0x40
+										|| fillStyle.type == 0x41));
 							}
 						}
 						else
@@ -581,9 +578,9 @@ class SWFShape
 						{
 							scaleMode = LineScaleMode.VERTICAL;
 						}
-						handler.lineStyle(lineStyle.width / 20, ColorUtils.rgb(lineStyle.color), ColorUtils.alpha(lineStyle.color), lineStyle.pixelHintingFlag,
-							scaleMode, LineCapsStyle.toEnum(lineStyle.startCapsStyle), LineCapsStyle.toEnum(lineStyle.endCapsStyle),
-							LineJointStyle.toEnum(lineStyle.jointStyle), lineStyle.miterLimitFactor);
+						handler.lineStyle(lineStyle.width / 20, ColorUtils.rgb(lineStyle.color), ColorUtils.alpha(lineStyle.color),
+							lineStyle.pixelHintingFlag, scaleMode, LineCapsStyle.toEnum(lineStyle.startCapsStyle),
+							LineCapsStyle.toEnum(lineStyle.endCapsStyle), LineJointStyle.toEnum(lineStyle.jointStyle), lineStyle.miterLimitFactor);
 
 						if (lineStyle.hasFillFlag)
 						{
@@ -724,10 +721,22 @@ class SWFShape
 	private function removeEdgeFromCoordMap(edge:IEdge):Void
 	{
 		var key:String = edge.from.x + "_" + edge.from.y;
-		var coordMapArray = coordMap.get(key);
+		var coordMapArray:Array<IEdge> = coordMap.get(key);
+
 		if (coordMapArray != null)
 		{
-			coordMap.remove(key);
+			if (coordMapArray.length == 1)
+			{
+				coordMap.remove(key);
+			}
+			else
+			{
+				var i:Int = coordMapArray.indexOf(edge);
+				if (i > -1)
+				{
+					coordMapArray.remove(edge);
+				}
+			}
 		}
 	}
 

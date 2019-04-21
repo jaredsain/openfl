@@ -6,6 +6,10 @@ import lime.app.Application as LimeApplication;
 import lime.ui.WindowAttributes;
 #end
 
+/**
+	The Application class is a Lime Application instance that uses
+	OpenFL Window by default when a new window is created.
+**/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -13,6 +17,7 @@ import lime.ui.WindowAttributes;
 @:access(openfl.display.DisplayObject)
 @:access(openfl.display.LoaderInfo)
 @:access(openfl.display.Window)
+@SuppressWarnings("checkstyle:FieldDocComment")
 class Application #if lime extends LimeApplication #end
 {
 	#if !lime

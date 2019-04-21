@@ -168,6 +168,8 @@ class DisplayObjectContainer extends InteractiveObject
 		For example, the following example shows three display objects, labeled
 		a, b, and c, at index positions 0, 2, and 1, respectively:
 
+		![b over c over a](/images/DisplayObjectContainer_layers.jpg)
+
 		If you add a child object that already has a different display object
 		container as a parent, the object is removed from the child list of the
 		other display object container.
@@ -241,15 +243,37 @@ class DisplayObjectContainer extends InteractiveObject
 			child.__setRenderDirty();
 			__setRenderDirty();
 
-			var event = new Event(Event.ADDED, true);
+			var event:Event = null;
+
+			#if openfl_pool_events
+			event = Event.__pool.get(Event.ADDED);
+			event.bubbles = true;
+			#else
+			event = new Event(Event.ADDED, true);
+			#end
+
 			event.target = child;
+
 			child.__dispatchWithCapture(event);
+
+			#if openfl_pool_events
+			Event.__pool.release(event);
+			#end
 
 			if (addedToStage)
 			{
-				var event = new Event(Event.ADDED_TO_STAGE, false, false);
+				#if openfl_pool_events
+				event = Event.__pool.get(Event.ADDED_TO_STAGE);
+				#else
+				event = new Event(Event.ADDED_TO_STAGE, false, false);
+				#end
+
 				child.__dispatchWithCapture(event);
 				child.__dispatchChildren(event);
+
+				#if openfl_pool_events
+				Event.__pool.release(event);
+				#end
 			}
 		}
 
@@ -483,6 +507,17 @@ class DisplayObjectContainer extends InteractiveObject
 		return null;
 	}
 
+	/**
+		Removes all `child` DisplayObject instances from the child list of the DisplayObjectContainer
+		instance. The `parent` property of the removed children is set to `null`, and the objects are
+		garbage collected if no other references to the children exist.
+
+		The garbage collector reallocates unused memory space. When a variable or object is no
+		longer actively referenced or stored somewhere, the garbage collector sweeps through and
+		wipes out the memory space it used to occupy if no other references to it exist.
+		@param	beginIndex	The beginning position. A value smaller than 0 throws a `RangeError`.
+		@param	endIndex	The ending position. A value smaller than 0 throws a `RangeError`.
+	**/
 	public function removeChildren(beginIndex:Int = 0, endIndex:Int = 0x7FFFFFFF):Void
 	{
 		if (endIndex == 0x7FFFFFFF)
@@ -533,6 +568,8 @@ class DisplayObjectContainer extends InteractiveObject
 		example shows three display objects, labeled a, b, and c, at index
 		positions 0, 1, and 2, respectively:
 
+		![c over b over a](/images/DisplayObjectContainerSetChildIndex1.jpg)
+
 		When you use the `setChildIndex()` method and specify an
 		index position that is already occupied, the only positions that change
 		are those in between the display object's former and new position. All
@@ -544,7 +581,13 @@ class DisplayObjectContainer extends InteractiveObject
 		`container`, you can swap the position of the display objects
 		labeled a and b by calling the following code:
 
+		```haxe
+		container.setChildIndex(container.getChildAt(1), 0);
+		```
+
 		This code results in the following arrangement of objects:
+
+		![c over a over b](/images/DisplayObjectContainerSetChildIndex2.jpg)
 
 		@param child The child DisplayObject instance for which you want to change
 					 the index number.
@@ -564,13 +607,22 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 	}
 
+	/**
+		Recursively stops the timeline execution of all MovieClips rooted at this object.
+
+		Child display objects belonging to a sandbox to which the excuting code does not
+		have access are ignored.
+
+		**Note:** Streaming media playback controlled via a NetStream object will not be
+		stopped.
+	**/
 	public function stopAllMovieClips():Void
 	{
 		__stopAllMovieClips();
 	}
 
 	/**
-		Swaps the z-order(front-to-back order) of the two specified child
+		Swaps the z-order (front-to-back order) of the two specified child
 		objects. All other child objects in the display object container remain in
 		the same index positions.
 
@@ -594,7 +646,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 
 	/**
-		Swaps the z-order(front-to-back order) of the child objects at the two
+		Swaps the z-order (front-to-back order) of the child objects at the two
 		specified index positions in the child list. All other child objects in
 		the display object container remain in the same index positions.
 

@@ -99,7 +99,7 @@ class Transform
 		A Matrix object containing values that alter the scaling, rotation, and
 		translation of the display object.
 
-		If the `matrix` property is set to a value(not
+		If the `matrix` property is set to a value (not
 		`null`), the `matrix3D` property is
 		`null`. And if the `matrix3D` property is set to a
 		value(not `null`), the `matrix` property is
@@ -158,6 +158,7 @@ class Transform
 		__hasMatrix = true;
 	}
 
+	#if false
 	/**
 		Returns a Matrix3D object, which can transform the space of a
 		specified display object in relation to the current display object's
@@ -177,6 +178,7 @@ class Transform
 				space.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public function getRelativeMatrix3D (relativeTo:DisplayObject):Matrix3D;
+	#end
 	// Get & Set Methods
 	@:noCompletion private function get_colorTransform():ColorTransform
 	{

@@ -51,7 +51,7 @@ import openfl._internal.renderer.context3D.stats.DrawCallContext;
 #end
 
 /**
-	The BitmapData class lets you work with the data(pixels) of a Bitmap
+	The BitmapData class lets you work with the data (pixels) of a Bitmap
 	object. You can use the methods of the BitmapData class to create
 	arbitrarily sized transparent or opaque bitmap images and manipulate them
 	in various ways at runtime. You can also access the BitmapData for a bitmap
@@ -73,24 +73,22 @@ import openfl._internal.renderer.context3D.stats.DrawCallContext;
 	a buffer of 32-bit integers. Each 32-bit integer determines the properties
 	of a single pixel in the bitmap.
 
-	Each 32-bit integer is a combination of four 8-bit channel values(from
+	Each 32-bit integer is a combination of four 8-bit channel values (from
 	0 to 255) that describe the alpha transparency and the red, green, and blue
-	(ARGB) values of the pixel.(For ARGB values, the most significant byte
+	(ARGB) values of the pixel. (For ARGB values, the most significant byte
 	represents the alpha channel value, followed by red, green, and blue.)
 
-	The four channels(alpha, red, green, and blue) are represented as
+	The four channels (alpha, red, green, and blue) are represented as
 	numbers when you use them with the `BitmapData.copyChannel()`
 	method or the `DisplacementMapFilter.componentX` and
 	`DisplacementMapFilter.componentY` properties, and these numbers
 	are represented by the following constants in the BitmapDataChannel
 	class:
 
-
 	* `BitmapDataChannel.ALPHA`
 	* `BitmapDataChannel.RED`
 	* `BitmapDataChannel.GREEN`
 	* `BitmapDataChannel.BLUE`
-
 
 	You can attach BitmapData objects to a Bitmap object by using the
 	`bitmapData` property of the Bitmap object.
@@ -103,7 +101,7 @@ import openfl._internal.renderer.context3D.stats.DrawCallContext;
 
 	In Flash Player 10, the maximum size for a BitmapData object
 	is 8,191 pixels in width or height, and the total number of pixels cannot
-	exceed 16,777,215 pixels.(So, if a BitmapData object is 8,191 pixels wide,
+	exceed 16,777,215 pixels. (So, if a BitmapData object is 8,191 pixels wide,
 	it can only be 2,048 pixels high.) In Flash Player 9 and earlier, the limitation
 	is 2,880 pixels in height and 2,880 in width.
 **/
@@ -129,7 +127,7 @@ import openfl._internal.renderer.context3D.stats.DrawCallContext;
 @:autoBuild(openfl._internal.macros.AssetsMacro.embedBitmap())
 class BitmapData implements IBitmapDrawable
 {
-	@:noCompletion private static inline var __vertexBufferStride:Int = 14;
+	@:noCompletion private static inline var VERTEX_BUFFER_STRIDE:Int = 14;
 	@:noCompletion private static var __supportsBGRA:Null<Bool> = null;
 	@:noCompletion private static var __textureFormat:Int;
 	@:noCompletion private static var __textureInternalFormat:Int;
@@ -196,6 +194,7 @@ class BitmapData implements IBitmapDrawable
 	@:noCompletion private var __indexBuffer:IndexBuffer3D;
 	@SuppressWarnings("checkstyle:Dynamic") @:noCompletion private var __indexBufferContext:#if lime RenderContext #else Dynamic #end;
 	@:noCompletion private var __indexBufferData:UInt16Array;
+	@:noCompletion private var __indexBufferGrid:Rectangle;
 	@:noCompletion private var __isMask:Bool;
 	@:noCompletion private var __isValid:Bool;
 	@:noCompletion private var __mask:DisplayObject;
@@ -215,6 +214,11 @@ class BitmapData implements IBitmapDrawable
 	@:noCompletion private var __vertexBuffer:VertexBuffer3D;
 	@SuppressWarnings("checkstyle:Dynamic") @:noCompletion private var __vertexBufferContext:#if lime RenderContext #else Dynamic #end;
 	@:noCompletion private var __vertexBufferData:Float32Array;
+	@:noCompletion private var __vertexBufferGrid:Rectangle;
+	@:noCompletion private var __vertexBufferHeight:Float;
+	@:noCompletion private var __vertexBufferScaleX:Float;
+	@:noCompletion private var __vertexBufferScaleY:Float;
+	@:noCompletion private var __vertexBufferWidth:Float;
 	@:noCompletion private var __worldAlpha:Float;
 	@:noCompletion private var __worldColorTransform:ColorTransform;
 	@:noCompletion private var __worldTransform:Matrix;
@@ -831,6 +835,8 @@ class BitmapData implements IBitmapDrawable
 							  is set to `true` on the left and
 							  `false` on the right:
 
+							  ![Two images: the left one with smoothing and the right one without smoothing.](/images/bitmapData_draw_smoothing.jpg)
+
 							  Drawing a bitmap with `smoothing` set
 							  to `true` takes longer than doing so with
 							  `smoothing` set to
@@ -982,12 +988,123 @@ class BitmapData implements IBitmapDrawable
 		Matrix.__pool.release(transform);
 	}
 
+	/**
+		Draws the `source` display object onto the bitmap image, using the Flash runtime
+		vector renderer. You can specify `matrix`, `colorTransform`, `blendMode`, and a
+		destination `clipRect` parameter to control how the rendering performs.
+		Optionally, you can specify whether the bitmap should be smoothed when scaled
+		(this works only if the source object is a BitmapData object).
+
+		**Note:** The `drawWithQuality()` method works exactly like the `draw()` method,
+		but instead of using the `Stage.quality` property to determine the quality of
+		vector rendering, you specify the `quality` parameter to the `drawWithQuality()`
+		method.
+
+		This method directly corresponds to how objects are drawn with the standard
+		vector renderer for objects in the authoring tool interface.
+
+		The source display object does not use any of its applied transformations for
+		this call. It is treated as it exists in the library or file, with no matrix
+		transform, no color transform, and no blend mode. To draw a display object
+		(such as a movie clip) by using its own transform properties, you can copy its
+		`transform` property object to the `transform` property of the Bitmap object that
+		uses the BitmapData object.
+
+		This method is supported over RTMP in Flash Player 9.0.115.0 and later and in
+		Adobe AIR. You can control access to streams on Flash Media Server in a
+		server-side script. For more information, see the `Client.audioSampleAccess` and
+		`Client.videoSampleAccess` properties in Server-Side ActionScript Language
+		Reference for Adobe Flash Media Server.
+
+		If the source object and (in the case of a Sprite or MovieClip object) all of
+		its child objects do not come from the same domain as the caller, or are not in
+		a content that is accessible to the caller by having called the
+		`Security.allowDomain()` method, a call to the `drawWithQuality()` throws a
+		SecurityError exception. This restriction does not apply to AIR content in the
+		application security sandbox.
+
+		There are also restrictions on using a loaded bitmap image as the source. A call
+		to the `drawWithQuality()` method is successful if the loaded image comes from the
+		same domain as the caller. Also, a cross-domain policy file on the image's server
+		can grant permission to the domain of the SWF content calling the
+		`drawWithQuality()` method. In this case, you must set the `checkPolicyFile` property
+		of a LoaderContext object, and use this object as the `context` parameter when
+		calling the `load()` method of the Loader object used to load the image. These
+		restrictions do not apply to AIR content in the application security sandbox.
+
+		On Windows, the `drawWithQuality()` method cannot capture SWF content embedded in an
+		HTML page in an HTMLLoader object in Adobe AIR.
+
+		The `drawWithQuality()` method cannot capture PDF content in Adobe AIR. Nor can it
+		capture or SWF content embedded in HTML in which the `wmode` attribute is set to
+		`"window"` in Adobe AIR.
+
+		@param	source	The display object or BitmapData object to draw to the BitmapData
+		object. (The DisplayObject and BitmapData classes implement the IBitmapDrawable
+		interface.)
+		@param	matrix	A Matrix object used to scale, rotate, or translate the coordinates
+		of the bitmap. If you do not want to apply a matrix transformation to the image,
+		set this parameter to an identity matrix, created with the default `new Matrix()`
+		constructor, or pass a `null` value.
+		@param	colorTransform	A ColorTransform object that you use to adjust the color
+		values of the bitmap. If no object is supplied, the bitmap image's colors are not
+		transformed. If you must pass this parameter but you do not want to transform the
+		image, set this parameter to a ColorTransform object created with the default
+		`new ColorTransform()` constructor.
+		@param	blendMode	A string value, from the flash.display.BlendMode class,
+		specifying the blend mode to be applied to the resulting bitmap.
+		@param	clipRect	A Rectangle object that defines the area of the source object
+		to draw. If you do not supply this value, no clipping occurs and the entire source
+		object is drawn.
+		@param	smoothing	A Boolean value that determines whether a BitmapData object is
+		smoothed when scaled or rotated, due to a scaling or rotation in the `matrix`
+		parameter. The smoothing parameter only applies if the `source` parameter is a
+		BitmapData object. With `smoothing` set to `false`, the rotated or scaled BitmapData
+		image can appear pixelated or jagged. For example, the following two images use the
+		same BitmapData object for the `source` parameter, but the `smoothing` parameter is
+		set to `true` on the left and `false` on the right:
+		![Two images: the left one with smoothing and the right one without smoothing.](/images/bitmapData_draw_smoothing.jpg)
+		Drawing a bitmap with `smoothing` set to `true` takes longer than doing so with
+		`smoothing` set to `false`.
+		@param	quality	Any of one of the StageQuality values. Selects the antialiasing
+		quality to be used when drawing vectors graphics.
+		@throws	ArgumentError	The source parameter is not a BitmapData or DisplayObject
+		object.
+		@throws	SecurityError	The source object and (in the case of a Sprite or MovieClip
+		object) all of its child objects do not come from the same domain as the caller,
+		or are not in a content that is accessible to the caller by having called the
+		`Security.allowDomain()` method. This restriction does not apply to AIR content
+		in the application security sandbox.
+		@throws	ArgumentError	The source is `null` or not a valid IBitmapDrawable object.
+	**/
 	public function drawWithQuality(source:IBitmapDrawable, matrix:Matrix = null, colorTransform:ColorTransform = null, blendMode:BlendMode = null,
 			clipRect:Rectangle = null, smoothing:Bool = false, quality:StageQuality = null):Void
 	{
 		draw(source, matrix, colorTransform, blendMode, clipRect, quality != LOW ? smoothing : false);
 	}
 
+	/**
+		Compresses this BitmapData object using the selected compressor algorithm and
+		returns a new ByteArray object. Optionally, writes the resulting data to the
+		specified ByteArray. The `compressor` argument specifies the encoding algorithm,
+		and can be PNGEncoderOptions, JPEGEncoderOptions, or JPEGXREncoderOptions.
+
+		The following example compresses a BitmapData object using the JPEGEncoderOptions:
+
+		```haxe
+		// Compress a BitmapData object as a JPEG file.
+		var bitmapData:BitmapData = new BitmapData(640,480,false,0x00FF00);
+		var byteArray:ByteArray = new ByteArray();
+		bitmapData.encode(new Rectangle(0,0,640,480), new openfl.display.JPEGEncoderOptions(), byteArray);
+		```
+
+		@param	rect	The area of the BitmapData object to compress.
+		@param	compressor	The compressor type to use. Valid values are:
+		flash.display.PNGEncoderOptions, flash.display.JPEGEncoderOptions, and
+		flash.display.JPEGXREncoderOptions.
+		@param	byteArray	The output ByteArray to hold the encoded image.
+		@return	A ByteArray containing the encoded image.
+	**/
 	public function encode(rect:Rectangle, compressor:Object, byteArray:ByteArray = null):ByteArray
 	{
 		#if lime
@@ -1059,6 +1176,21 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	/**
+		Creates a new BitmapData instance from Base64-encoded data immediately.
+
+		The returned BitmapData will have a width and height of zero initially, then it
+		will populate with image data once decoding is successful.
+
+		If you must know when the data will be decoded, use the `loadFromBase64` method
+		instead.
+
+		All platforms except for HTML5 will currently return `null`
+
+		@param	base64	Base64-encoded data
+		@param	type	The MIME-type for the encoded data ("image/jpeg", etc)
+		@returns	A BitmapData when targeting HTML5 or `null` on all other targets
+	**/
 	public static function fromBase64(base64:String, type:String):BitmapData
 	{
 		#if (js && html5)
@@ -1072,6 +1204,21 @@ class BitmapData implements IBitmapDrawable
 	#end
 
 	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	/**
+		Creates a new BitmapData from bytes (a haxe.io.Bytes or openfl.utils.ByteArray)
+		synchronously. This means that the BitmapData will be returned immediately (if
+		supported).
+
+		HTML5 and Flash do not support creating BitmapData synchronously, so these targets
+		always return `null`. Other targets will return `null` if decoding was unsuccessful.
+
+		The optional `rawAlpha` parameter makes it easier to process images that have alpha
+		data stored separately.
+
+		@param	bytes	A haxe.io.Bytes or openfl.utils.ByteArray instance
+		@param	rawAlpha	An optional byte array with alpha data
+		@returns	A new BitmapData if successful, or `null` if unsuccessful
+	**/
 	public static function fromBytes(bytes:ByteArray, rawAlpha:ByteArray = null):BitmapData
 	{
 		#if (js && html5)
@@ -1085,6 +1232,16 @@ class BitmapData implements IBitmapDrawable
 	#end
 
 	#if (js && html5)
+	/**
+		Creates a new BitmapData from an HTML5 canvas element immediately.
+
+		All targets except from HTML5 targets will return `null`.
+
+		@param	canvas	An HTML5 canvas element
+		@param	transparent	Whether the new BitmapData object should be considered
+		transparent
+		@returns	A new BitmapData if successful, or `null` if unsuccessful
+	**/
 	public static function fromCanvas(canvas:CanvasElement, transparent:Bool = true):BitmapData
 	{
 		if (canvas == null) return null;
@@ -1097,6 +1254,19 @@ class BitmapData implements IBitmapDrawable
 	#end
 
 	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	/**
+		Creates a new BitmapData from a file path synchronously. This means that the
+		BitmapData will be returned immediately (if supported).
+
+		HTML5 and Flash do not support creating BitmapData synchronously, so these targets
+		always return `null`.
+
+		In order to load files from a remote web address, use the `loadFromFile` method,
+		which supports asynchronous loading.
+
+		@param	path	A local file path containing an image
+		@returns	A new BitmapData if successful, or `null` if unsuccessful
+	**/
 	public static function fromFile(path:String):BitmapData
 	{
 		#if (js && html5)
@@ -1110,6 +1280,15 @@ class BitmapData implements IBitmapDrawable
 	#end
 
 	#if lime
+	/**
+		Creates a new BitmapData using an existing Lime Image instance.
+
+		@param	image	A Lime Image object
+		@param	transparent	Whether the new BitmapData object should be considered
+		transparent
+		@returns	A new BitmapData if the Image (and associated ImageBuffer) are not
+		`null`, otherwise `null` will be returned
+	**/
 	public static function fromImage(image:Image, transparent:Bool = true):BitmapData
 	{
 		if (image == null || image.buffer == null) return null;
@@ -1121,6 +1300,16 @@ class BitmapData implements IBitmapDrawable
 	}
 	#end
 
+	/**
+		**BETA**
+
+		Creates a new BitmapData instance from a Stage3D rectangle texture.
+
+		This method is not supported by the Flash target.
+
+		@param	texture	A RectangleTexture instance
+		@returns	A new BitmapData if successful, or `null` if unsuccessful
+	**/
 	public static function fromTexture(texture:RectangleTexture):BitmapData
 	{
 		if (texture == null) return null;
@@ -1165,25 +1354,213 @@ class BitmapData implements IBitmapDrawable
 		return sourceRect.clone();
 	}
 
-	@:dox(hide) public function getIndexBuffer(context:Context3D):IndexBuffer3D
+	/**
+		**BETA**
+
+		Get the IndexBuffer3D object associated with this BitmapData object
+
+		@param	context	A Stage3D context
+		@returns	An IndexBuffer3D object for use with rendering
+	**/
+	@:dox(hide) public function getIndexBuffer(context:Context3D, scale9Grid:Rectangle = null):IndexBuffer3D
 	{
 		var gl = context.gl;
 
-		if (__indexBuffer == null || __indexBufferContext != context.__context)
+		if (__indexBuffer == null
+			|| __indexBufferContext != context.__context
+			|| (scale9Grid != null && __indexBufferGrid == null)
+			|| (__indexBufferGrid != null && !__indexBufferGrid.equals(scale9Grid)))
 		{
 			// TODO: Use shared buffer on context
+			// TODO: Support for UVs other than scale-9 grid?
 
 			#if lime
-			__indexBufferData = new UInt16Array(6);
-			__indexBufferData[0] = 0;
-			__indexBufferData[1] = 1;
-			__indexBufferData[2] = 2;
-			__indexBufferData[3] = 2;
-			__indexBufferData[4] = 1;
-			__indexBufferData[5] = 3;
-
 			__indexBufferContext = context.__context;
-			__indexBuffer = context.createIndexBuffer(6);
+			__indexBuffer = null;
+
+			if (scale9Grid != null)
+			{
+				if (__indexBufferGrid == null) __indexBufferGrid = new Rectangle();
+				__indexBufferGrid.copyFrom(scale9Grid);
+
+				var centerX = scale9Grid.width;
+				var centerY = scale9Grid.height;
+				if (centerX != 0 && centerY != 0)
+				{
+					__indexBufferData = new UInt16Array(54);
+
+					// 3 ——— 2 ——— 5 ——— 7
+					// |  /  |  /  |  /  |
+					// 1 ——— 0 ——— 4 ——— 6
+					// |  /  |  /  |  /  |
+					// 9 ——— 8 —— 10 —— 11
+					// |  /  |  /  |  /  |
+					// 13 — 12 —— 14 —— 15
+
+					// top left
+					__indexBufferData[0] = 0;
+					__indexBufferData[1] = 1;
+					__indexBufferData[2] = 2;
+					__indexBufferData[3] = 2;
+					__indexBufferData[4] = 1;
+					__indexBufferData[5] = 3;
+
+					// top center
+					__indexBufferData[6] = 4;
+					__indexBufferData[7] = 0;
+					__indexBufferData[8] = 5;
+					__indexBufferData[9] = 5;
+					__indexBufferData[10] = 0;
+					__indexBufferData[11] = 2;
+
+					// top right
+					__indexBufferData[12] = 6;
+					__indexBufferData[13] = 4;
+					__indexBufferData[14] = 7;
+					__indexBufferData[15] = 7;
+					__indexBufferData[16] = 4;
+					__indexBufferData[17] = 5;
+
+					// middle left
+					__indexBufferData[18] = 8;
+					__indexBufferData[19] = 9;
+					__indexBufferData[20] = 0;
+					__indexBufferData[21] = 0;
+					__indexBufferData[22] = 9;
+					__indexBufferData[23] = 1;
+
+					// middle center
+					__indexBufferData[24] = 10;
+					__indexBufferData[25] = 8;
+					__indexBufferData[26] = 4;
+					__indexBufferData[27] = 4;
+					__indexBufferData[28] = 8;
+					__indexBufferData[29] = 0;
+
+					// middle right
+					__indexBufferData[30] = 11;
+					__indexBufferData[31] = 10;
+					__indexBufferData[32] = 6;
+					__indexBufferData[33] = 6;
+					__indexBufferData[34] = 10;
+					__indexBufferData[35] = 4;
+
+					// bottom left
+					__indexBufferData[36] = 12;
+					__indexBufferData[37] = 13;
+					__indexBufferData[38] = 8;
+					__indexBufferData[39] = 8;
+					__indexBufferData[40] = 13;
+					__indexBufferData[41] = 9;
+
+					// bottom center
+					__indexBufferData[42] = 14;
+					__indexBufferData[43] = 12;
+					__indexBufferData[44] = 10;
+					__indexBufferData[45] = 10;
+					__indexBufferData[46] = 12;
+					__indexBufferData[47] = 8;
+
+					// bottom center
+					__indexBufferData[48] = 15;
+					__indexBufferData[49] = 14;
+					__indexBufferData[50] = 11;
+					__indexBufferData[51] = 11;
+					__indexBufferData[52] = 14;
+					__indexBufferData[53] = 10;
+
+					__indexBuffer = context.createIndexBuffer(54);
+				}
+				else if (centerX == 0 && centerY != 0)
+				{
+					__indexBufferData = new UInt16Array(18);
+
+					// 3 ——— 2
+					// |  /  |
+					// 1 ——— 0
+					// |  /  |
+					// 5 ——— 4
+					// |  /  |
+					// 7 ——— 6
+
+					// top
+					__indexBufferData[0] = 0;
+					__indexBufferData[1] = 1;
+					__indexBufferData[2] = 2;
+					__indexBufferData[3] = 2;
+					__indexBufferData[4] = 1;
+					__indexBufferData[5] = 3;
+
+					// middle
+					__indexBufferData[6] = 4;
+					__indexBufferData[7] = 5;
+					__indexBufferData[8] = 0;
+					__indexBufferData[9] = 0;
+					__indexBufferData[10] = 5;
+					__indexBufferData[11] = 1;
+
+					// bottom
+					__indexBufferData[12] = 6;
+					__indexBufferData[13] = 7;
+					__indexBufferData[14] = 4;
+					__indexBufferData[15] = 4;
+					__indexBufferData[16] = 7;
+					__indexBufferData[17] = 5;
+
+					__indexBuffer = context.createIndexBuffer(18);
+				}
+				else if (centerX != 0 && centerY == 0)
+				{
+					__indexBufferData = new UInt16Array(18);
+
+					// 3 ——— 2 ——— 5 ——— 7
+					// |  /  |  /  |  /  |
+					// 1 ——— 0 ——— 4 ——— 6
+
+					// left
+					__indexBufferData[0] = 0;
+					__indexBufferData[1] = 1;
+					__indexBufferData[2] = 2;
+					__indexBufferData[3] = 2;
+					__indexBufferData[4] = 1;
+					__indexBufferData[5] = 3;
+
+					// center
+					__indexBufferData[6] = 4;
+					__indexBufferData[7] = 0;
+					__indexBufferData[8] = 5;
+					__indexBufferData[9] = 5;
+					__indexBufferData[10] = 0;
+					__indexBufferData[11] = 2;
+
+					// right
+					__indexBufferData[12] = 6;
+					__indexBufferData[13] = 4;
+					__indexBufferData[14] = 7;
+					__indexBufferData[15] = 7;
+					__indexBufferData[16] = 4;
+					__indexBufferData[17] = 5;
+
+					__indexBuffer = context.createIndexBuffer(18);
+				}
+			}
+			else
+			{
+				__indexBufferGrid = null;
+			}
+
+			if (__indexBuffer == null)
+			{
+				__indexBufferData = new UInt16Array(6);
+				__indexBufferData[0] = 0;
+				__indexBufferData[1] = 1;
+				__indexBufferData[2] = 2;
+				__indexBufferData[3] = 2;
+				__indexBufferData[4] = 1;
+				__indexBufferData[5] = 3;
+				__indexBuffer = context.createIndexBuffer(6);
+			}
+
 			__indexBuffer.uploadFromTypedArray(__indexBufferData);
 			#end
 		}
@@ -1191,11 +1568,30 @@ class BitmapData implements IBitmapDrawable
 		return __indexBuffer;
 	}
 
-	@:dox(hide) public function getVertexBuffer(context:Context3D):VertexBuffer3D
+	/**
+		**BETA**
+
+		Get the VertexBuffer3D object associated with this BitmapData object
+
+		@param	context	A Stage3D context
+		@returns	A VertexBuffer3D object for use with rendering
+	**/
+	@:dox(hide) public function getVertexBuffer(context:Context3D, scale9Grid:Rectangle = null, targetObject:DisplayObject = null):VertexBuffer3D
 	{
 		var gl = context.gl;
 
-		if (__vertexBuffer == null || __vertexBufferContext != context.__context)
+		// TODO: Support for UVs other than scale-9 grid?
+		// TODO: Better way of handling object transform?
+
+		if (__vertexBuffer == null
+			|| __vertexBufferContext != context.__context
+			|| (scale9Grid != null && __vertexBufferGrid == null)
+			|| (__vertexBufferGrid != null && !__vertexBufferGrid.equals(scale9Grid))
+			|| (targetObject != null
+				&& (__vertexBufferWidth != targetObject.width
+					|| __vertexBufferHeight != targetObject.height
+					|| __vertexBufferScaleX != targetObject.scaleX
+					|| __vertexBufferScaleY != targetObject.scaleY)))
 		{
 			#if openfl_power_of_two
 			var newWidth = 1;
@@ -1239,31 +1635,272 @@ class BitmapData implements IBitmapDrawable
 			// [ colorTransform.redOffset / 255, colorTransform.greenOffset / 255, colorTransform.blueOffset / 255, colorTransform.alphaOffset / 255 ]
 
 			#if lime
-			__vertexBufferData = new Float32Array(__vertexBufferStride * 4);
+			__vertexBufferContext = context.__context;
+			__vertexBuffer = null;
 
-			__vertexBufferData[0] = width;
-			__vertexBufferData[1] = height;
-			__vertexBufferData[3] = uvWidth;
-			__vertexBufferData[4] = uvHeight;
-			__vertexBufferData[__vertexBufferStride + 1] = height;
-			__vertexBufferData[__vertexBufferStride + 4] = uvHeight;
-			__vertexBufferData[__vertexBufferStride * 2] = width;
-			__vertexBufferData[__vertexBufferStride * 2 + 3] = uvWidth;
+			if (scale9Grid != null && targetObject != null)
+			{
+				if (__vertexBufferGrid == null) __vertexBufferGrid = new Rectangle();
+				__vertexBufferGrid.copyFrom(scale9Grid);
+
+				__vertexBufferWidth = targetObject.width;
+				__vertexBufferHeight = targetObject.height;
+				__vertexBufferScaleX = targetObject.scaleX;
+				__vertexBufferScaleY = targetObject.scaleY;
+
+				var centerX = scale9Grid.width;
+				var centerY = scale9Grid.height;
+				if (centerX != 0 && centerY != 0)
+				{
+					__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 16);
+
+					var left = scale9Grid.x;
+					var top = scale9Grid.y;
+					var right = width - centerX - left;
+					var bottom = height - centerY - top;
+
+					var uvLeft = left / width;
+					var uvTop = top / height;
+					var uvCenterX = centerX / width;
+					var uvCenterY = centerY / height;
+					var uvRight = right / width;
+					var uvBottom = bottom / height;
+
+					var renderedLeft = left / targetObject.scaleX;
+					var renderedTop = top / targetObject.scaleY;
+					var renderedRight = right / targetObject.scaleX;
+					var renderedBottom = bottom / targetObject.scaleY;
+					var renderedCenterX = (targetObject.width / targetObject.scaleX) - renderedLeft - renderedRight;
+					var renderedCenterY = (targetObject.height / targetObject.scaleY) - renderedTop - renderedBottom;
+
+					// 3 ——— 2 ——— 5 ——— 7
+					// |  /  |  /  |  /  |
+					// 1 ——— 0 ——— 4 ——— 6
+					// |  /  |  /  |  /  |
+					// 9 ——— 8 —— 10 —— 11
+					// |  /  |  /  |  /  |
+					// 13 — 12 —— 14 —— 15
+
+					// top left <0-1-2> <2-1-3>
+					__vertexBufferData[0] = renderedLeft;
+					__vertexBufferData[1] = renderedTop;
+					__vertexBufferData[3] = uvWidth * uvLeft;
+					__vertexBufferData[4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = renderedTop;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = renderedLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth * uvLeft;
+
+					// top center <4-0-5> <5-0-2>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 1] = renderedTop;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 3] = uvWidth * (uvLeft + uvCenterX);
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5 + 3] = uvWidth * (uvLeft + uvCenterX);
+
+					// top right <6-4-7> <7-4-5>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 1] = renderedTop;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7 + 3] = uvWidth;
+
+					// middle left <8-9-0> <0-9-1>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 8] = renderedLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 8 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 8 + 3] = uvWidth * uvLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 8 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 9 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 9 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					// middle center <10-8-4> <4-8-0>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 10] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 10 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 10 + 3] = uvWidth * (uvLeft + uvCenterX);
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 10 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					// middle right <11-10-6> <6-10-4>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 11] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 11 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 11 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 11 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					// bottom left <12-13-8> <8-13-9>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 12] = renderedLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 12 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 12 + 3] = uvWidth * uvLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 12 + 4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 13 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 13 + 4] = uvHeight;
+
+					// bottom center <14-12-10> <10-12-8>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 14] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 14 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 14 + 3] = uvWidth * (uvLeft + uvCenterX);
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 14 + 4] = uvHeight;
+
+					// bottom right <15-14-11> <11-14-10>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 15] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 15 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 15 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 15 + 4] = uvHeight;
+
+					__vertexBuffer = context.createVertexBuffer(16, VERTEX_BUFFER_STRIDE);
+				}
+				else if (centerX == 0 && centerY != 0)
+				{
+					__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 8);
+
+					var top = scale9Grid.y;
+					var bottom = height - centerY - top;
+
+					var uvTop = top / height;
+					var uvCenterY = centerY / height;
+					var uvBottom = bottom / height;
+
+					var renderedTop = top / targetObject.scaleY;
+					var renderedBottom = bottom / targetObject.scaleY;
+					var renderedCenterY = (targetObject.height / targetObject.scaleY) - renderedTop - renderedBottom;
+
+					var renderedWidth = targetObject.width / targetObject.scaleX;
+
+					// 3 ——— 2
+					// |  /  |
+					// 1 ——— 0
+					// |  /  |
+					// 5 ——— 4
+					// |  /  |
+					// 7 ——— 6
+
+					// top <0-1-2> <2-1-3>
+					__vertexBufferData[0] = renderedWidth;
+					__vertexBufferData[1] = renderedTop;
+					__vertexBufferData[3] = uvWidth;
+					__vertexBufferData[4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = renderedTop;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight * uvTop;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = renderedWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth;
+
+					// middle <4-5-0> <0-5-1>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4] = renderedWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5 + 1] = renderedTop + renderedCenterY;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5 + 4] = uvHeight * (uvTop + uvCenterY);
+
+					// bottom <6-7-4> <4-7-5>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6] = renderedWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7 + 1] = height;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7 + 4] = uvHeight;
+
+					__vertexBuffer = context.createVertexBuffer(8, VERTEX_BUFFER_STRIDE);
+				}
+				else if (centerY == 0 && centerX != 0)
+				{
+					__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 8);
+
+					var left = scale9Grid.x;
+					var right = width - centerX - left;
+
+					var uvLeft = left / width;
+					var uvCenterX = centerX / width;
+					var uvRight = right / width;
+
+					var renderedLeft = left / targetObject.scaleX;
+					var renderedRight = right / targetObject.scaleX;
+					var renderedCenterX = (targetObject.width / targetObject.scaleX) - renderedLeft - renderedRight;
+
+					var renderedHeight = targetObject.height / targetObject.scaleY;
+
+					// 3 ——— 2 ——— 5 ——— 7
+					// |  /  |  /  |  /  |
+					// 1 ——— 0 ——— 4 ——— 6
+
+					// top left <0-1-2> <2-1-3>
+					__vertexBufferData[0] = renderedLeft;
+					__vertexBufferData[1] = renderedHeight;
+					__vertexBufferData[3] = uvWidth * uvLeft;
+					__vertexBufferData[4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = renderedHeight;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = renderedLeft;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth * uvLeft;
+
+					// top center <4-0-5> <5-0-2>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 1] = renderedHeight;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 3] = uvWidth * (uvLeft + uvCenterX);
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 4 + 4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5] = renderedLeft + renderedCenterX;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 5 + 3] = uvWidth * (uvLeft + uvCenterX);
+
+					// top right <6-4-7> <7-4-5>
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 1] = renderedHeight;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 3] = uvWidth;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 6 + 4] = uvHeight;
+
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7] = width;
+					__vertexBufferData[VERTEX_BUFFER_STRIDE * 7 + 3] = uvWidth;
+
+					__vertexBuffer = context.createVertexBuffer(8, VERTEX_BUFFER_STRIDE);
+				}
+			}
+			else
+			{
+				__vertexBufferGrid = null;
+			}
+
+			if (__vertexBuffer == null)
+			{
+				__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 4);
+
+				__vertexBufferData[0] = width;
+				__vertexBufferData[1] = height;
+				__vertexBufferData[3] = uvWidth;
+				__vertexBufferData[4] = uvHeight;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = height;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = width;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth;
+
+				__vertexBuffer = context.createVertexBuffer(3, VERTEX_BUFFER_STRIDE);
+			}
 
 			// for (i in 0...4) {
 
-			// 	__vertexBufferData[__vertexBufferStride * i + 5] = alpha;
+			// 	__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 5] = alpha;
 
 			// 	if (colorTransform != null) {
 
-			// 		__vertexBufferData[__vertexBufferStride * i + 6] = colorTransform.redMultiplier;
-			// 		__vertexBufferData[__vertexBufferStride * i + 7] = colorTransform.greenMultiplier;
-			// 		__vertexBufferData[__vertexBufferStride * i + 8] = colorTransform.blueMultiplier;
-			// 		__vertexBufferData[__vertexBufferStride * i + 9] = colorTransform.alphaMultiplier;
-			// 		__vertexBufferData[__vertexBufferStride * i + 10] = colorTransform.redOffset / 255;
-			// 		__vertexBufferData[__vertexBufferStride * i + 11] = colorTransform.greenOffset / 255;
-			// 		__vertexBufferData[__vertexBufferStride * i + 12] = colorTransform.blueOffset / 255;
-			// 		__vertexBufferData[__vertexBufferStride * i + 13] = colorTransform.alphaOffset / 255;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 6] = colorTransform.redMultiplier;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 7] = colorTransform.greenMultiplier;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 8] = colorTransform.blueMultiplier;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 9] = colorTransform.alphaMultiplier;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 10] = colorTransform.redOffset / 255;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 11] = colorTransform.greenOffset / 255;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 12] = colorTransform.blueOffset / 255;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 13] = colorTransform.alphaOffset / 255;
 
 			// 	}
 
@@ -1271,8 +1908,6 @@ class BitmapData implements IBitmapDrawable
 
 			// __vertexBufferAlpha = alpha;
 			// __vertexBufferColorTransform = colorTransform != null ? colorTransform.__clone () : null;
-			__vertexBufferContext = context.__context;
-			__vertexBuffer = context.createVertexBuffer(3, __vertexBufferStride);
 
 			__vertexBuffer.uploadFromTypedArray(__vertexBufferData);
 			#end
@@ -1287,7 +1922,7 @@ class BitmapData implements IBitmapDrawable
 
 			// 	for (i in 0...4) {
 
-			// 		__vertexBufferData[__vertexBufferStride * i + 5] = alpha;
+			// 		__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 5] = alpha;
 
 			// 	}
 
@@ -1309,14 +1944,14 @@ class BitmapData implements IBitmapDrawable
 
 			// 		for (i in 0...4) {
 
-			// 			__vertexBufferData[__vertexBufferStride * i + 6] = colorTransform.redMultiplier;
-			// 			__vertexBufferData[__vertexBufferStride * i + 11] = colorTransform.greenMultiplier;
-			// 			__vertexBufferData[__vertexBufferStride * i + 16] = colorTransform.blueMultiplier;
-			// 			__vertexBufferData[__vertexBufferStride * i + 21] = colorTransform.alphaMultiplier;
-			// 			__vertexBufferData[__vertexBufferStride * i + 22] = colorTransform.redOffset / 255;
-			// 			__vertexBufferData[__vertexBufferStride * i + 23] = colorTransform.greenOffset / 255;
-			// 			__vertexBufferData[__vertexBufferStride * i + 24] = colorTransform.blueOffset / 255;
-			// 			__vertexBufferData[__vertexBufferStride * i + 25] = colorTransform.alphaOffset / 255;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 6] = colorTransform.redMultiplier;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 11] = colorTransform.greenMultiplier;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 16] = colorTransform.blueMultiplier;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 21] = colorTransform.alphaMultiplier;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 22] = colorTransform.redOffset / 255;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 23] = colorTransform.greenOffset / 255;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 24] = colorTransform.blueOffset / 255;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 25] = colorTransform.alphaOffset / 255;
 
 			// 		}
 
@@ -1324,14 +1959,14 @@ class BitmapData implements IBitmapDrawable
 
 			// 		for (i in 0...4) {
 
-			// 			__vertexBufferData[__vertexBufferStride * i + 6] = 1;
-			// 			__vertexBufferData[__vertexBufferStride * i + 11] = 1;
-			// 			__vertexBufferData[__vertexBufferStride * i + 16] = 1;
-			// 			__vertexBufferData[__vertexBufferStride * i + 21] = 1;
-			// 			__vertexBufferData[__vertexBufferStride * i + 22] = 0;
-			// 			__vertexBufferData[__vertexBufferStride * i + 23] = 0;
-			// 			__vertexBufferData[__vertexBufferStride * i + 24] = 0;
-			// 			__vertexBufferData[__vertexBufferStride * i + 25] = 0;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 6] = 1;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 11] = 1;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 16] = 1;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 21] = 1;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 22] = 0;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 23] = 0;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 24] = 0;
+			// 			__vertexBufferData[VERTEX_BUFFER_STRIDE * i + 25] = 0;
 
 			// 		}
 
@@ -1491,6 +2126,14 @@ class BitmapData implements IBitmapDrawable
 		#end
 	}
 
+	/**
+		**BETA**
+
+		Get the CairoImageSurface associated with this BitmapData object for use with
+		Cairo software rendering
+
+		@returns	The associated CairoImageSurface
+	**/
 	@SuppressWarnings("checkstyle:Dynamic")
 	@:dox(hide) public function getSurface():#if lime CairoImageSurface #else Dynamic #end
 	{
@@ -1508,6 +2151,14 @@ class BitmapData implements IBitmapDrawable
 		#end
 	}
 
+	/**
+		**BETA**
+
+		Get a hardware texture representing this BitmapData instance
+
+		@param	context	A Context3D instance
+		@returns	A RectangleTexture
+	**/
 	@:dox(hide) public function getTexture(context:Context3D):RectangleTexture
 	{
 		if (!__isValid) return null;
@@ -1550,7 +2201,7 @@ class BitmapData implements IBitmapDrawable
 				#end
 			}
 			#else
-			if (#if openfl_power_of_two! textureImage.powerOfTwo || #end (!textureImage.premultiplied && textureImage.transparent))
+			if (#if openfl_power_of_two !textureImage.powerOfTwo || #end (!textureImage.premultiplied && textureImage.transparent))
 			{
 				textureImage = textureImage.clone();
 				textureImage.premultiplied = true;
@@ -1582,7 +2233,6 @@ class BitmapData implements IBitmapDrawable
 		Generates a vector array from a rectangular region of pixel data. Returns
 		a Vector object of unsigned integers(a 32-bit unmultiplied pixel value)
 		for the specified rectangle.
-
 		@param rect A rectangular area in the current BitmapData object.
 		@return A Vector representing the given Rectangle.
 		@throws TypeError The rect is null.
@@ -1601,6 +2251,15 @@ class BitmapData implements IBitmapDrawable
 		return result;
 	}
 
+	/**
+		Computes a 256-value binary number histogram of a BitmapData object. This method
+		returns a Vector object containing four Vector<Float> instances (four Vector
+		objects that contain Float objects). The four Vector instances represent the
+		red, green, blue and alpha components in order. Each Vector instance contains
+		256 values that represent the population count of an individual component value,
+		from 0 to 255.
+		@param	hRect	The area of the BitmapData object to use.
+	**/
 	public function histogram(hRect:Rectangle = null):Array<Array<Int>>
 	{
 		var rect = hRect != null ? hRect : new Rectangle(0, 0, width, height);
@@ -1615,6 +2274,37 @@ class BitmapData implements IBitmapDrawable
 		return result;
 	}
 
+	/**
+		Performs pixel-level hit detection between one bitmap image and a point,
+		rectangle, or other bitmap image. A hit is defined as an overlap of a point or
+		rectangle over an opaque pixel, or two overlapping opaque pixels. No stretching,
+		rotation, or other transformation of either object is considered when the hit test
+		is performed.
+
+		If an image is an opaque image, it is considered a fully opaque rectangle for this
+		method. Both images must be transparent images to perform pixel-level hit testing
+		that considers transparency. When you are testing two transparent images, the alpha
+		threshold parameters control what alpha channel values, from 0 to 255, are
+		considered opaque.
+
+		@param	firstPoint	A position of the upper-left corner of the BitmapData image
+		in an arbitrary coordinate space. The same coordinate space is used in defining
+		the secondBitmapPoint parameter.
+		@param	firstAlphaThreshold	The smallest alpha channel value that is considered
+		opaque for this hit test.
+		@param	secondObject	A Rectangle, Point, Bitmap, or BitmapData object.
+		@param	secondBitmapDataPoint	A point that defines a pixel location in the
+		second BitmapData object. Use this parameter only when the value of `secondObject`
+		is a BitmapData object.
+		@param	secondAlphaThreshold	The smallest alpha channel value that is
+		considered opaque in the second BitmapData object. Use this parameter only when
+		the value of `secondObject` is a BitmapData object and both BitmapData objects
+		are transparent.
+		@return	A value of `true` if a hit occurs; otherwise, `false`.
+		@throws	ArgumentError	The `secondObject` parameter is not a Point, Rectangle,
+		Bitmap, or BitmapData object.
+		@throws	TypeError	The `firstPoint` is `null`.
+	**/
 	public function hitTest(firstPoint:Point, firstAlphaThreshold:Int, secondObject:Object, secondBitmapDataPoint:Point = null, secondAlphaThreshold:Int = 1):Bool
 	{
 		if (!readable) return false;
@@ -1740,6 +2430,16 @@ class BitmapData implements IBitmapDrawable
 		return false;
 	}
 
+	/**
+		Creates a new BitmapData from Base64-encoded data asynchronously. The data
+		and (if successful) decoding the data into an image occur in the background.
+		Progress, completion and error callbacks will be dispatched in the current
+		thread using callbacks attached to a returned Future object.
+
+		@param	base64	Base64-encoded data
+		@param	type	The MIME-type for the encoded data ("image/jpeg", etc)
+		@returns	A Future BitmapData
+	**/
 	public static function loadFromBase64(base64:String, type:String):Future<BitmapData>
 	{
 		#if lime
@@ -1752,6 +2452,19 @@ class BitmapData implements IBitmapDrawable
 		#end
 	}
 
+	/**
+		Creates a new BitmapData from haxe.io.Bytes or openfl.utils.ByteArray data
+		asynchronously. The data and image decoding will occur in the background.
+		Progress, completion and error callbacks will be dispatched in the current
+		thread using callbacks attached to a returned Future object.
+
+		The optional `rawAlpha` parameter makes it easier to process images that have alpha
+		data stored separately.
+
+		@param	bytes	A haxe.io.Bytes or openfl.utils.ByteArray instance
+		@param	rawAlpha	An optional byte array with alpha data
+		@returns	A Future BitmapData
+	**/
 	public static function loadFromBytes(bytes:ByteArray, rawAlpha:ByteArray = null):Future<BitmapData>
 	{
 		#if lime
@@ -1771,6 +2484,15 @@ class BitmapData implements IBitmapDrawable
 		#end
 	}
 
+	/**
+		Creates a new BitmapData from a file path or web address asynchronously. The file
+		load and image decoding will occur in the background.
+		Progress, completion and error callbacks will be dispatched in the current
+		thread using callbacks attached to a returned Future object.
+
+		@param	path	A local file path or web address containing an image
+		@returns	A Future BitmapData
+	**/
 	public static function loadFromFile(path:String):Future<BitmapData>
 	{
 		#if lime
@@ -1793,6 +2515,43 @@ class BitmapData implements IBitmapDrawable
 	**/
 	public function lock():Void {}
 
+	/**
+		Performs per-channel blending from a source image to a destination image. For
+		each channel and each pixel, a new value is computed based on the channel
+		values of the source and destination pixels. For example, in the red channel,
+		the new value is computed as follows (where `redSrc` is the red channel value
+		for a pixel in the source image and `redDest` is the red channel value at the
+		corresponding pixel of the destination image):
+
+		```haxe
+		redDest = [(redSrc * redMultiplier) + (redDest * (256 - redMultiplier))] / 256;
+		```
+
+		The `redMultiplier`, `greenMultiplier`, `blueMultiplier`, and `alphaMultiplier`
+		values are the multipliers used for each color channel. Use a hexadecimal
+		value ranging from 0 to 0x100 (256) where 0 specifies the full value from the
+		destination is used in the result, 0x100 specifies the full value from the
+		source is used, and numbers in between specify a blend is used (such as 0x80
+		for 50%).
+
+		@param	sourceBitmapData	The input bitmap image to use. The source image can
+		be a different BitmapData object, or it can refer to the current BitmapData
+		object.
+		@param	sourceRect	A rectangle that defines the area of the source image to use
+		as input.
+		@param	destPoint	The point within the destination image (the current
+		BitmapData instance) that corresponds to the upper-left corner of the source
+		rectangle.
+		@param	redMultiplier	A hexadecimal uint value by which to multiply the red
+		channel value.
+		@param	greenMultiplier	A hexadecimal uint value by which to multiply the green
+		channel value.
+		@param	blueMultiplier	A hexadecimal uint value by which to multiply the blue
+		channel value.
+		@param	alphaMultiplier	A hexadecimal uint value by which to multiply the alpha
+		transparency value.
+		@throws	TypeError	The `sourceBitmapData`, `sourceRect` or `destPoint` are `null`.
+	**/
 	public function merge(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, redMultiplier:UInt, greenMultiplier:UInt, blueMultiplier:UInt,
 			alphaMultiplier:UInt):Void
 	{
@@ -1887,6 +2646,46 @@ class BitmapData implements IBitmapDrawable
 		}
 	}
 
+	/**
+		Remaps the color channel values in an image that has up to four arrays of
+		color palette data, one for each channel.
+
+		Flash runtimes use the following steps to generate the resulting image:
+
+		1. After the red, green, blue, and alpha values are computed, they are added
+		together using standard 32-bit-integer arithmetic.
+		2. The red, green, blue, and alpha channel values of each pixel are extracted
+		into separate 0 to 255 values. These values are used to look up new color
+		values in the appropriate array: `redArray`, `greenArray`, `blueArray`, and
+		`alphaArray`. Each of these four arrays should contain 256 values.
+		3. After all four of the new channel values are retrieved, they are combined
+		into a standard ARGB value that is applied to the pixel.
+
+		Cross-channel effects can be supported with this method. Each input array can
+		contain full 32-bit values, and no shifting occurs when the values are added
+		together. This routine does not support per-channel clamping.
+
+		If no array is specified for a channel, the color channel is copied from the
+		source image to the destination image.
+
+		You can use this method for a variety of effects such as general palette mapping
+		(taking one channel and converting it to a false color image). You can also use
+		this method for a variety of advanced color manipulation algorithms, such as
+		gamma, curves, levels, and quantizing.
+
+		@param	sourceBitmapData	The input bitmap image to use. The source image can
+		be a different BitmapData object, or it can refer to the current BitmapData
+		instance.
+		@param	sourceRect	A rectangle that defines the area of the source image to use
+		as input.
+		@param	destPoint	The point within the destination image (the current BitmapData
+		object) that corresponds to the upper-left corner of the source rectangle.
+		@param	redArray	If `redArray` is not `null`, `red = redArray[source red value] else red = source rect value`.
+		@param	greenArray	If `greenArray` is not `null`, `green = greenArray[source green value] else green = source green value`.
+		@param	blueArray	If `blueArray` is not `null, `blue = blueArray[source blue value] else blue = source blue value`.
+		@param	alphaArray	If `alphaArray` is not `null, `alpha = alphaArray[source alpha value] else alpha = source alpha value`.
+		@throws	TypeError	The `sourceBitmapData`, `sourceRect` or `destPoint` are `null`.
+	**/
 	public function paletteMap(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, redArray:Array<Int> = null, greenArray:Array<Int> = null,
 			blueArray:Array<Int> = null, alphaArray:Array<Int> = null):Void
 	{
@@ -2177,11 +2976,16 @@ class BitmapData implements IBitmapDrawable
 	public function threshold(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, operation:String, threshold:Int, color:Int = 0x00000000,
 			mask:Int = 0xFFFFFFFF, copySource:Bool = false):Int
 	{
-		if (sourceBitmapData == null || sourceRect == null || destPoint == null
+		if (sourceBitmapData == null
+			|| sourceRect == null
+			|| destPoint == null
 			|| sourceRect.x > sourceBitmapData.width
 			|| sourceRect.y > sourceBitmapData.height
 			|| destPoint.x > width
-			|| destPoint.y > height) return 0;
+			|| destPoint.y > height)
+		{
+			return 0;
+		}
 
 		#if lime
 		return image.threshold(sourceBitmapData.image, sourceRect.__toLimeRectangle(), destPoint.__toLimeVector2(), operation, threshold, color, mask,
@@ -2296,7 +3100,10 @@ class BitmapData implements IBitmapDrawable
 			color = 0;
 		}
 
-		if (allowFramebuffer && __texture != null && __texture.__glFramebuffer != null && Lib.current.stage.__renderer.__type == OPENGL)
+		if (allowFramebuffer
+			&& __texture != null
+			&& __texture.__glFramebuffer != null
+			&& Lib.current.stage.__renderer.__type == OPENGL)
 		{
 			var renderer:OpenGLRenderer = cast Lib.current.stage.__renderer;
 			var context = renderer.__context3D;
@@ -2592,7 +3399,7 @@ class BitmapData implements IBitmapDrawable
 
 		var shader = renderer.__defaultDisplayShader;
 		renderer.setShader(shader);
-		renderer.applyBitmapData(this, renderer.__allowSmoothing && (renderer.__upscaled));
+		renderer.applyBitmapData(this, renderer.__upscaled);
 		renderer.applyMatrix(renderer.__getMatrix(__worldTransform, AUTO));
 		renderer.applyAlpha(__worldAlpha);
 		renderer.applyColorTransform(__worldColorTransform);
@@ -2620,7 +3427,7 @@ class BitmapData implements IBitmapDrawable
 
 		var shader = renderer.__maskShader;
 		renderer.setShader(shader);
-		renderer.applyBitmapData(this, renderer.__allowSmoothing && (renderer.__upscaled));
+		renderer.applyBitmapData(this, renderer.__upscaled);
 		renderer.applyMatrix(renderer.__getMatrix(__worldTransform, AUTO));
 		renderer.updateShader();
 
@@ -2668,14 +3475,14 @@ class BitmapData implements IBitmapDrawable
 			__vertexBufferData[1] = height;
 			__vertexBufferData[3] = uvX + uvWidth;
 			__vertexBufferData[4] = uvY + uvHeight;
-			__vertexBufferData[__vertexBufferStride + 1] = height;
-			__vertexBufferData[__vertexBufferStride + 3] = uvX;
-			__vertexBufferData[__vertexBufferStride + 4] = uvY + uvHeight;
-			__vertexBufferData[__vertexBufferStride * 2] = width;
-			__vertexBufferData[__vertexBufferStride * 2 + 3] = uvX + uvWidth;
-			__vertexBufferData[__vertexBufferStride * 2 + 4] = uvY;
-			__vertexBufferData[__vertexBufferStride * 3 + 3] = uvX;
-			__vertexBufferData[__vertexBufferStride * 3 + 4] = uvY;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = height;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE + 3] = uvX;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvY + uvHeight;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = width;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvX + uvWidth;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 4] = uvY;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE * 3 + 3] = uvX;
+			__vertexBufferData[VERTEX_BUFFER_STRIDE * 3 + 4] = uvY;
 
 			__vertexBuffer.uploadFromTypedArray(__vertexBufferData);
 		}

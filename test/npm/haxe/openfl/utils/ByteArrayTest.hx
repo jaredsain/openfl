@@ -68,9 +68,15 @@ class ByteArrayTest
 				#if lime
 				return lime.system.System.endianness;
 				#elseif js
+				#if haxe4
+				var arrayBuffer = new js.lib.ArrayBuffer(2);
+				var uint8Array = new js.lib.Uint8Array(arrayBuffer);
+				var uint16array = new js.lib.Uint16Array(arrayBuffer);
+				#else
 				var arrayBuffer = new js.html.ArrayBuffer(2);
 				var uint8Array = new js.html.Uint8Array(arrayBuffer);
 				var uint16array = new js.html.Uint16Array(arrayBuffer);
+				#end
 				uint8Array[0] = 0xAA;
 				uint8Array[1] = 0xBB;
 				if (uint16array[0] == 0xAABB) return Endian.BIG_ENDIAN;
@@ -319,7 +325,6 @@ class ByteArrayTest
 
 					Assert.equal( "a", data.readMultiByte(4, encoding));
 			}*/
-
 			/* TODO: use haxe's serializer
 				Mocha.it ("testReadWriteObject()
 				{
@@ -657,43 +662,42 @@ class ByteArrayTest
 					Assert.equal(str, data.readUTFBytes(str.length));
 				}
 				#end */
-
 			/*Mocha.it ("testUncompress", function () {
 
-					var data = new ByteArray();
+				var data = new ByteArray();
 
-					data.writeByte(120);
-					data.writeByte(156);
-					data.writeByte(203);
-					data.writeByte(72);
-					data.writeByte(205);
-					data.writeByte(201);
-					data.writeByte(201);
-					data.writeByte(87);
-					data.writeByte(200);
-					data.writeByte(0);
-					data.writeByte(145);
-					data.writeByte(0);
-					data.writeByte(25);
-					data.writeByte(145);
-					data.writeByte(4);
-					data.writeByte(73);
+				data.writeByte(120);
+				data.writeByte(156);
+				data.writeByte(203);
+				data.writeByte(72);
+				data.writeByte(205);
+				data.writeByte(201);
+				data.writeByte(201);
+				data.writeByte(87);
+				data.writeByte(200);
+				data.writeByte(0);
+				data.writeByte(145);
+				data.writeByte(0);
+				data.writeByte(25);
+				data.writeByte(145);
+				data.writeByte(4);
+				data.writeByte(73);
 
-					data.position = 0;
+				data.position = 0;
 
-					data.uncompress();
+				data.uncompress();
 
-					Assert.equal(104, data.readUnsignedByte());
-					Assert.equal(101, data.readUnsignedByte());
-					Assert.equal(108, data.readUnsignedByte());
-					Assert.equal(108, data.readUnsignedByte());
-					Assert.equal(111, data.readUnsignedByte());
-					Assert.equal(32, data.readUnsignedByte());
-					Assert.equal(104, data.readUnsignedByte());
-					Assert.equal(101, data.readUnsignedByte());
-					Assert.equal(108, data.readUnsignedByte());
-					Assert.equal(108, data.readUnsignedByte());
-					Assert.equal(111, data.readUnsignedByte());
+				Assert.equal(104, data.readUnsignedByte());
+				Assert.equal(101, data.readUnsignedByte());
+				Assert.equal(108, data.readUnsignedByte());
+				Assert.equal(108, data.readUnsignedByte());
+				Assert.equal(111, data.readUnsignedByte());
+				Assert.equal(32, data.readUnsignedByte());
+				Assert.equal(104, data.readUnsignedByte());
+				Assert.equal(101, data.readUnsignedByte());
+				Assert.equal(108, data.readUnsignedByte());
+				Assert.equal(108, data.readUnsignedByte());
+				Assert.equal(111, data.readUnsignedByte());
 
 			}*/
 		});

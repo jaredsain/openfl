@@ -68,13 +68,18 @@ class Context3DGraphics
 					var c = data.readBeginShaderFill();
 					var shaderBuffer = c.shaderBuffer;
 
-					if (shaderBuffer == null || shaderBuffer.shader == null || shaderBuffer.shader.__bitmap == null)
+					bitmap = null;
+
+					if (shaderBuffer != null)
 					{
-						bitmap = null;
-					}
-					else
-					{
-						bitmap = c.shaderBuffer.shader.__bitmap.input;
+						for (i in 0...shaderBuffer.inputCount)
+						{
+							if (shaderBuffer.inputRefs[i].name == "bitmap")
+							{
+								bitmap = shaderBuffer.inputs[i];
+								break;
+							}
+						}
 					}
 
 				case DRAW_QUADS:
@@ -173,8 +178,9 @@ class Context3DGraphics
 							if (transformABCD && transformXY)
 							{
 								ti = i * 6;
-								tileTransform.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4],
-									transforms[ti + 5]);
+								tileTransform
+									.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4], transforms[ti
+									+ 5]);
 							}
 							else if (transformABCD)
 							{
@@ -365,6 +371,11 @@ class Context3DGraphics
 		return true;
 		#end
 
+		if (graphics.__owner.__worldScale9Grid != null)
+		{
+			return false;
+		}
+
 		var data = new DrawCommandReader(graphics.__commands);
 		var hasColorFill = false, hasBitmapFill = false, hasShaderFill = false;
 
@@ -488,7 +499,8 @@ class Context3DGraphics
 
 			if (bounds != null && width >= 1 && height >= 1)
 			{
-				if (graphics.__hardwareDirty || (graphics.__quadBuffer == null && graphics.__vertexBuffer == null && graphics.__vertexBufferUVT == null))
+				if (graphics.__hardwareDirty
+					|| (graphics.__quadBuffer == null && graphics.__vertexBuffer == null && graphics.__vertexBufferUVT == null))
 				{
 					buildBuffer(graphics, renderer);
 				}
@@ -578,7 +590,7 @@ class Context3DGraphics
 
 									renderer.__setShaderBuffer(shaderBuffer);
 									renderer.applyMatrix(uMatrix);
-									renderer.applyBitmapData(bitmap, false, repeat);
+									renderer.applyBitmapData(bitmap, false /* ignored */, repeat);
 									renderer.applyAlpha(graphics.__owner.__worldAlpha);
 									renderer.applyColorTransform(graphics.__owner.__worldColorTransform);
 									// renderer.__updateShaderBuffer ();
@@ -588,7 +600,7 @@ class Context3DGraphics
 									shader = maskRender ? renderer.__maskShader : renderer.__initGraphicsShader(null);
 									renderer.setShader(shader);
 									renderer.applyMatrix(uMatrix);
-									renderer.applyBitmapData(bitmap, renderer.__allowSmoothing && smooth, repeat);
+									renderer.applyBitmapData(bitmap, smooth, repeat);
 									renderer.applyAlpha(graphics.__owner.__worldAlpha);
 									renderer.applyColorTransform(graphics.__owner.__worldColorTransform);
 									renderer.updateShader();
@@ -606,10 +618,11 @@ class Context3DGraphics
 										renderer.__updateShaderBuffer(shaderBufferOffset);
 									}
 
-									if (shader.__position != null) context.setVertexBufferAt(shader.__position.index, graphics.__quadBuffer.vertexBuffer,
-										quadBufferPosition * 16, FLOAT_2);
+									if (shader.__position != null) context.setVertexBufferAt(shader.__position.index, graphics.__quadBuffer
+										.vertexBuffer, quadBufferPosition * 16, FLOAT_2);
 									if (shader.__textureCoord != null) context.setVertexBufferAt(shader.__textureCoord.index, graphics.__quadBuffer
-										.vertexBuffer, (quadBufferPosition * 16) + 2, FLOAT_2);
+										.vertexBuffer, (quadBufferPosition * 16)
+										+ 2, FLOAT_2);
 
 									context.drawTriangles(context.__quadIndexBuffer, 0, length * 2);
 
@@ -650,7 +663,7 @@ class Context3DGraphics
 								var shader = maskRender ? renderer.__maskShader : renderer.__initGraphicsShader(null);
 								renderer.setShader(shader);
 								renderer.applyMatrix(renderer.__getMatrix(matrix, AUTO));
-								renderer.applyBitmapData(blankBitmapData, renderer.__allowSmoothing, repeat);
+								renderer.applyBitmapData(blankBitmapData, true, repeat);
 								#if lime
 								renderer.applyAlpha((color.a / 0xFF) * graphics.__owner.__worldAlpha);
 								#end
@@ -711,16 +724,16 @@ class Context3DGraphics
 								shader = maskRender ? renderer.__maskShader : renderer.__initGraphicsShader(null);
 								renderer.setShader(shader);
 								renderer.applyMatrix(uMatrix);
-								renderer.applyBitmapData(bitmap, renderer.__allowSmoothing && smooth, repeat);
+								renderer.applyBitmapData(bitmap, smooth, repeat);
 								renderer.applyAlpha(graphics.__owner.__worldAlpha);
 								renderer.applyColorTransform(graphics.__owner.__worldColorTransform);
 								renderer.updateShader();
 							}
 
-							if (shader.__position != null) context.setVertexBufferAt(shader.__position.index, vertexBuffer, bufferPosition,
-								hasUVTData ? FLOAT_4 : FLOAT_2);
-							if (shader.__textureCoord != null) context.setVertexBufferAt(shader.__textureCoord.index, vertexBuffer, bufferPosition +
-								vertLength, FLOAT_2);
+							if (shader.__position != null) context.setVertexBufferAt(shader.__position
+								.index, vertexBuffer, bufferPosition, hasUVTData ? FLOAT_4 : FLOAT_2);
+							if (shader.__textureCoord != null) context.setVertexBufferAt(shader.__textureCoord.index, vertexBuffer, bufferPosition
+								+ vertLength, FLOAT_2);
 
 							switch (culling)
 							{

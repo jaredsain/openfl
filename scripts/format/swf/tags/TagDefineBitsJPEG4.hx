@@ -30,23 +30,13 @@ class TagDefineBitsJPEG4 extends TagDefineBitsJPEG3 implements IDefinitionTag
 		{
 			bitmapType = BitmapType.JPEG;
 		}
-		else if (bitmapData[0] == 0x89 &&
-			bitmapData[1] == 0x50 &&
-			bitmapData[2] == 0x4e &&
-			bitmapData[3] == 0x47 &&
-			bitmapData[4] == 0x0d &&
-			bitmapData[5] == 0x0a &&
-			bitmapData[6] == 0x1a &&
-			bitmapData[7] == 0x0a)
+		else if (bitmapData[0] == 0x89 && bitmapData[1] == 0x50 && bitmapData[2] == 0x4e && bitmapData[3] == 0x47 && bitmapData[4] == 0x0d
+			&& bitmapData[5] == 0x0a && bitmapData[6] == 0x1a && bitmapData[7] == 0x0a)
 		{
 			bitmapType = BitmapType.PNG;
 		}
-		else if (bitmapData[0] == 0x47 &&
-			bitmapData[1] == 0x49 &&
-			bitmapData[2] == 0x46 &&
-			bitmapData[3] == 0x38 &&
-			bitmapData[4] == 0x39 &&
-			bitmapData[5] == 0x61)
+		else if (bitmapData[0] == 0x47 && bitmapData[1] == 0x49 && bitmapData[2] == 0x46 && bitmapData[3] == 0x38 && bitmapData[4] == 0x39
+			&& bitmapData[5] == 0x61)
 		{
 			bitmapType = BitmapType.GIF89A;
 		}
@@ -92,9 +82,22 @@ class TagDefineBitsJPEG4 extends TagDefineBitsJPEG3 implements IDefinitionTag
 
 	override public function toString(indent:Int = 0):String
 	{
-		var str:String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "Type: " + BitmapType.toString(bitmapType) + ", " +
-			"DeblockParam: " + deblockParam + ", " + "HasAlphaData: " + (bitmapAlphaData.length > 0) + ", " + ((bitmapAlphaData.length > 0) ? "BitmapAlphaLength: " +
-				bitmapAlphaData.length + ", " : "") + "BitmapLength: " + bitmapData.length;
+		var str:String = Tag.toStringCommon(type, name, indent)
+			+ "ID: "
+			+ characterId
+			+ ", "
+			+ "Type: "
+			+ BitmapType.toString(bitmapType)
+			+ ", "
+			+ "DeblockParam: "
+			+ deblockParam
+			+ ", "
+			+ "HasAlphaData: "
+			+ (bitmapAlphaData.length > 0)
+			+ ", "
+			+ ((bitmapAlphaData.length > 0) ? "BitmapAlphaLength: " + bitmapAlphaData.length + ", " : "")
+			+ "BitmapLength: "
+			+ bitmapData.length;
 		return str;
 	}
 }

@@ -33,27 +33,47 @@ import openfl.utils.ByteArray;
 	The shader bytecode can be loaded at run time using a URLLoader instance.
 	The following example demonstrates loading a shader bytecode file at run
 	time and linking it to a Shader instance.
-	<codeblock xml:space="preserve"> var loader:URLLoader = new URLLoader();
+
+	```as3
+	var loader:URLLoader = new URLLoader();
 	loader.dataFormat = URLLoaderDataFormat.BINARY;
-	loader.addEventListener(Event.COMPLETE, onLoadComplete); loader.load(new
-	URLRequest("myShader.pbj")); var shader:Shader; function
-	onLoadComplete(event:Event):void { // Create a new shader and set the
-	loaded data as its bytecode shader = new Shader(); shader.byteCode =
-	loader.data; // You can also pass the bytecode to the Shader() constructor
-	like this: // shader = new Shader(loader.data); // do something with the
-	shader } ```
+	loader.addEventListener(Event.COMPLETE, onLoadComplete);
+	loader.load(new URLRequest("myShader.pbj"));
+	var shader:Shader;
+
+	function onLoadComplete(event:Event):void {
+		// Create a new shader and set the loaded data as its bytecode
+		shader = new Shader();
+		shader.byteCode = loader.data;
+
+		// You can also pass the bytecode to the Shader() constructor like this:
+		// shader = new Shader(loader.data);
+
+		// do something with the shader
+	}
+	```
+
 	You can also embed the shader into the SWF at compile time using the
 	`[Embed]` metadata tag. The `[Embed]` metadata tag is only available if
 	you use the Flex SDK to compile the SWF. The `[Embed]` tag's `source`
 	parameter points to the shader file, and its `mimeType` parameter is
 	`"application/octet-stream"`, as in this example:
-	<codeblock xml:space="preserve"> [Embed(source="myShader.pbj",
-	mimeType="application/octet-stream)] var MyShaderClass:Class; // ... //
-	create a new shader and set the embedded shader as its bytecode var
-	shaderShader = new Shader(); shader.byteCode = new MyShaderClass(); // You
-	can also pass the bytecode to the Shader() constructor like this: // var
-	shader:Shader = new Shader(new MyShaderClass()); // do something with the
-	shader ```
+
+	```as3
+	[Embed(source="myShader.pbj", mimeType="application/octet-stream)] var MyShaderClass:Class;
+
+	// ...
+
+	// create a new shader and set the embedded shader as its bytecode var
+	shaderShader = new Shader();
+	shader.byteCode = new MyShaderClass();
+
+	// You can also pass the bytecode to the Shader() constructor like this:
+	// var shader:Shader = new Shader(new MyShaderClass());
+
+	// do something with the shader
+	```
+
 	In either case, you link the raw shader (the `URLLoader.data` property or
 	an instance of the `[Embed]` data class) to the Shader instance. As the
 	previous examples demonstrate, you can do this in two ways. You can pass
@@ -120,8 +140,26 @@ class Shader
 		properties of the `data` object, see the ShaderData class description.
 	**/
 	public var data(get, set):ShaderData;
+
+	/**
+		Get or set the fragment source used when compiling with GLSL.
+
+		This property is not available on the Flash target.
+	**/
 	public var glFragmentSource(get, set):String;
+
+	/**
+		The compiled GLProgram if available.
+
+		This property is not available on the Flash target.
+	**/
 	@SuppressWarnings("checkstyle:Dynamic") public var glProgram(default, null):GLProgram;
+
+	/**
+		Get or set the vertex source used when compiling with GLSL.
+
+		This property is not available on the Flash target.
+	**/
 	public var glVertexSource(get, set):String;
 
 	/**
@@ -164,6 +202,12 @@ class Shader
 		* `sqrt(x)`
 	**/
 	public var precisionHint:ShaderPrecision;
+
+	/**
+		The compiled Program3D if available.
+
+		This property is not available on the Flash target.
+	**/
 	public var program:Program3D;
 
 	@:noCompletion private var __alpha:ShaderParameter<Float>;
@@ -429,8 +473,8 @@ class Shader
 				precision highp float;
 				#else
 				precision mediump float;
-				#endif" : "precision lowp float;") +
-				"
+				#endif" : "precision lowp float;")
+				+ "
 				#endif
 				";
 

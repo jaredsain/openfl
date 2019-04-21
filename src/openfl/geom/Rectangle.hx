@@ -56,11 +56,11 @@ import lime.math.Rectangle as LimeRectangle;
 #end
 class Rectangle
 {
-	@:noCompletion private static var __pool:ObjectPool<Rectangle> = new ObjectPool<Rectangle>(function() return new Rectangle(), function(r) r
-		.setTo(0, 0, 0, 0));
 	#if lime
 	@:noCompletion private static var __limeRectangle:LimeRectangle;
 	#end
+	@:noCompletion private static var __pool:ObjectPool<Rectangle> = new ObjectPool<Rectangle>(function() return new Rectangle(), function(r) r
+		.setTo(0, 0, 0, 0));
 
 	/**
 		The sum of the `y` and `height` properties.
@@ -270,6 +270,12 @@ class Rectangle
 		}
 	}
 
+	/**
+		Copies all of rectangle data from the source Rectangle object into the calling
+		Rectangle object.
+
+		@param	sourceRect	The Rectangle object from which to copy the data.
+	**/
 	public function copyFrom(sourceRect:Rectangle):Void
 	{
 		x = sourceRect.x;
@@ -307,12 +313,19 @@ class Rectangle
 		@param dx The value to be added to the left and the right of the
 				  Rectangle object. The following equation is used to
 				  calculate the new width and position of the rectangle:
-				  <codeblock xml:space="preserve"> x -= dx; width += 2 ~~ dx;
+
+				  ```as3
+				  x -= dx;
+				  width += 2 * dx;
 				  ```
 		@param dy The value to be added to the top and the bottom of the
 				  Rectangle. The following equation is used to calculate the
-				  new height and position of the rectangle: <codeblock
-				  xml:space="preserve"> y -= dy; height += 2 ~~ dy; ```
+				  new height and position of the rectangle:
+
+				  ```
+				  y -= dy;
+				  height += 2 * dy;
+				  ```
 	**/
 	public function inflate(dx:Float, dy:Float):Void
 	{
@@ -327,10 +340,16 @@ class Rectangle
 		the `Rectangle.inflate()` method except it takes a Point object as a
 		parameter.
 		The following two code examples give the same result:
-		<codeblock xml:space="preserve"> var rect1:Rectangle = new
-		Rectangle(0,0,2,5); rect1.inflate(2,2) ``` <codeblock
-		xml:space="preserve"> var rect1:Rectangle = new Rectangle(0,0,2,5);
-		var pt1:Point = new Point(2,2); rect1.inflatePoint(pt1) ```
+
+		```haxe
+		var rect1 = new Rectangle(0,0,2,5);
+		rect1.inflate(2,2);
+		```
+		```haxe
+		var rect1 = new Rectangle(0,0,2,5);
+		var pt1 = new Point(2,2);
+		rect1.inflatePoint(pt1);
+		```
 
 		@param point The `x` property of this Point object is used to increase
 					 the horizontal dimension of the Rectangle object. The `y`
@@ -457,6 +476,14 @@ class Rectangle
 		x = y = width = height = 0;
 	}
 
+	/**
+		Sets the members of Rectangle to the specified values
+
+		@param	xa	the values to set the rectangle to.
+		@param	ya
+		@param	widtha
+		@param	heighta
+	**/
 	public function setTo(xa:Float, ya:Float, widtha:Float, heighta:Float):Void
 	{
 		x = xa;

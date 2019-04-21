@@ -50,8 +50,10 @@ import openfl.events.NetStatusEvent;
 #end
 class NetConnection extends EventDispatcher
 {
-	public static inline var CONNECT_SUCCESS:String = "NetConnection.Connect.Success";
+	@SuppressWarnings("checkstyle:FieldDocComment")
+	@:noCompletion @:dox(hide) public static inline var CONNECT_SUCCESS:String = "NetConnection.Connect.Success";
 
+	#if false
 	/**
 		The default object encoding for NetConnection objects. When an object
 		is written to or read from binary data, the `defaultObjectEncoding`
@@ -72,6 +74,9 @@ class NetConnection extends EventDispatcher
 		`objectEncoding` property.
 	**/
 	// @:noCompletion @:dox(hide) public static var defaultObjectEncoding:ObjectEncoding;
+	#end
+
+	#if false
 	/**
 		Indicates the object on which callback methods are invoked. The
 		default is this NetConnection instance. If you set the `client`
@@ -82,6 +87,9 @@ class NetConnection extends EventDispatcher
 						  object.
 	**/
 	// @:noCompletion @:dox(hide) public var client:Dynamic;
+	#end
+
+	#if false
 	/**
 		Indicates whether the application is connected to a server through a
 		persistent RTMP connection (`true`) or not (`false`). When connected
@@ -90,6 +98,9 @@ class NetConnection extends EventDispatcher
 		`true`.
 	**/
 	// @:noCompletion @:dox(hide) public var connected (default, null):Bool;
+	#end
+
+	#if false
 	/**
 		The proxy type used to make a successful connection to Flash Media
 		Server. Possible values are: `"none"`, `"HTTP"`, `"HTTPS"`, or
@@ -108,6 +119,9 @@ class NetConnection extends EventDispatcher
 							  the NetConnection instance was not connected.
 	**/
 	// @:noCompletion @:dox(hide) public var connectedProxyType (default, null):String;
+	#end
+
+	#if false
 	/**
 		The identifier of the Flash Media Server instance to which this Flash
 		Player or Adobe AIR instance is connected. This property is meaningful
@@ -115,6 +129,9 @@ class NetConnection extends EventDispatcher
 		only after an RTMFP connection is established.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farID (default, null):String;
+	#end
+
+	#if false
 	/**
 		A value chosen substantially by Flash Media Server, unique to this
 		connection. This value appears to the server as its `client.nearNonce`
@@ -122,6 +139,9 @@ class NetConnection extends EventDispatcher
 		connections.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farNonce (default, null):String;
+	#end
+
+	#if false
 	/**
 		The total number of inbound and outbound peer connections that this
 		instance of Flash Player or Adobe AIR allows. The default value is 8.
@@ -131,6 +151,9 @@ class NetConnection extends EventDispatcher
 		connections are not dropped.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var maxPeerConnections:UInt;
+	#end
+
+	#if false
 	/**
 		The identifier of this Flash Player or Adobe AIR instance for this
 		NetConnection instance. This property is meaningful only for RTMFP
@@ -145,6 +168,9 @@ class NetConnection extends EventDispatcher
 		this instance.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var nearID (default, null):String;
+	#end
+
+	#if false
 	/**
 		A value chosen substantially by this Flash Player or Adobe AIR
 		instance, unique to this connection. This value appears to the server
@@ -152,6 +178,9 @@ class NetConnection extends EventDispatcher
 		RTMPE, and RTMPTE connections.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var nearNonce (default, null):String;
+	#end
+
+	#if false
 	/**
 		The object encoding for this NetConnection instance.
 		When an object is written to or read from binary data, the
@@ -201,6 +230,9 @@ class NetConnection extends EventDispatcher
 							   NetConnection instance was connected.
 	**/
 	// @:noCompletion @:dox(hide) public var objectEncoding:ObjectEncoding;
+	#end
+
+	#if false
 	/**
 		The protocol used to establish the connection. This property is
 		relevant when using Flash Media Server. Possible values are as
@@ -216,6 +248,9 @@ class NetConnection extends EventDispatcher
 							  the NetConnection instance was not connected.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var protocol (default, null):String;
+	#end
+
+	#if false
 	/**
 		Determines which fallback methods are tried if an initial connection
 		attempt to Flash Media Server fails. Set the `proxyType` property
@@ -239,6 +274,9 @@ class NetConnection extends EventDispatcher
 		network by a proxy server.
 	**/
 	// @:noCompletion @:dox(hide) public var proxyType:String;
+	#end
+
+	#if false
 	/**
 		An object that holds all of the peer subscriber NetStream objects that
 		are not associated with publishing NetStream objects. Subscriber
@@ -246,12 +284,18 @@ class NetConnection extends EventDispatcher
 		objects are in the `NetStream.peerStreams` array.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var unconnectedPeerStreams (default, null):Array<Dynamic>;
+	#end
+
+	#if false
 	/**
 		The URI passed to the NetConnection.connect() method. If
 		`NetConnection.connect()` hasn't been called or if no URI was passed,
 		this property is `undefined`.
 	**/
 	// @:noCompletion @:dox(hide) public var uri (default, null):String;
+	#end
+
+	#if false
 	/**
 		Indicates whether a secure connection was made using native Transport
 		Layer Security (TLS) rather than HTTPS. This property is valid only
@@ -261,6 +305,7 @@ class NetConnection extends EventDispatcher
 							  the NetConnection instance was not connected.
 	**/
 	// @:noCompletion @:dox(hide) public var usingTLS (default, null):Bool;
+	#end
 
 	/**
 		Creates a NetConnection object. Call the `connect()` method to make a
@@ -270,14 +315,17 @@ class NetConnection extends EventDispatcher
 		property.
 
 		The following code creates a NetConnection object:
-		<pre xml:space="preserve"> var nc:NetConnection = new NetConnection();
-		</pre>
+
+		```haxe
+		var nc = new NetConnection();
+		```
 	**/
 	public function new()
 	{
 		super();
 	}
 
+	#if false
 	/**
 		Adds a context header to the Action Message Format (AMF) packet
 		structure. This header is sent with every future AMF packet. If you
@@ -296,6 +344,9 @@ class NetConnection extends EventDispatcher
 		@param param          Any ActionScript object.
 	**/
 	// @:noCompletion @:dox(hide) public function addHeader (operation:String, mustUnderstand:Bool = false, ?param:Object):Void;
+	#end
+
+	#if false
 	/**
 		Calls a command or method on Flash Media Server or on an application
 		server running Flash Remoting. Before calling `NetConnection.call()`
@@ -332,6 +383,9 @@ class NetConnection extends EventDispatcher
 							 server.
 	**/
 	// @:noCompletion @:dox(hide) public function call (command:String, responder:openfl.net.Responder, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Void;
+	#end
+
+	#if false
 	/**
 		Closes the connection that was opened locally or to the server and
 		dispatches a `netStatus` event with a `code` property of
@@ -362,6 +416,7 @@ class NetConnection extends EventDispatcher
 
 	**/
 	// @:noCompletion @:dox(hide) public function close ():Void;
+	#end
 
 	/**
 		Creates a two-way connection to an application on Flash Media Server
@@ -470,7 +525,7 @@ class NetConnection extends EventDispatcher
 							  "Restricting Networking APIs" in the
 							  _ActionScript 3.0 Developer's Guide_.
 	**/
-	public function connect(command:String, ?_, ?_, ?_, ?_, ?_):Void
+	public function connect(command:String, p1 = null, p2 = null, p3 = null, p4 = null, p5 = null):Void
 	{
 		if (command != null)
 		{

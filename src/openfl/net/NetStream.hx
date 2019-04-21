@@ -512,6 +512,7 @@ import js.Browser;
 #end
 class NetStream extends EventDispatcher
 {
+	#if false
 	/**
 		A static object used as a parameter to the constructor for a NetStream
 		instance. It is the default value of the second parameter in the
@@ -520,7 +521,9 @@ class NetStream extends EventDispatcher
 		constructor to make a connection to a Flash Media Server instance.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public static var CONNECT_TO_FMS:String;
+	#end
 
+	#if false
 	/**
 		Creates a peer-to-peer publisher connection. Pass this string for the
 		second (optional) parameter to the constructor for a NetStream
@@ -528,7 +531,11 @@ class NetStream extends EventDispatcher
 		connection for the purposes of publishing audio and video to clients.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public static var DIRECT_CONNECTIONS:String;
+	#end
+	@:dox(hide) @:noCompletion @SuppressWarnings("checkstyle:FieldDocComment")
 	public var audioCodec(default, null):Int;
+
+	#if false
 	/**
 		For RTMFP connections, specifies whether audio is sent with full
 		reliability. When TRUE, all audio transmitted over this NetStream is
@@ -541,6 +548,9 @@ class NetStream extends EventDispatcher
 		property is set to TRUE.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var audioReliable:Bool;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies whether peer-to-peer subscribers on
 		this NetStream are allowed to capture the audio stream. When FALSE,
@@ -548,6 +558,9 @@ class NetStream extends EventDispatcher
 		errors.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var audioSampleAccess:Bool;
+	#end
+
+	#if false
 	/**
 		The number of seconds of previously displayed data that currently
 		cached for rewinding and playback.
@@ -562,6 +575,9 @@ class NetStream extends EventDispatcher
 		property to FALSE.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var backBufferLength (default, null):Float;
+	#end
+
+	#if false
 	/**
 		Specifies how much previously displayed data Flash Player tries to
 		cache for rewinding and playback, in seconds. The default value is 30
@@ -585,6 +601,7 @@ class NetStream extends EventDispatcher
 		TRUE.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var backBufferTime:Float;
+	#end
 
 	/**
 		The number of seconds of data currently in the buffer. You can use
@@ -624,14 +641,14 @@ class NetStream extends EventDispatcher
 		of either 60 seconds or twice the value of `NetStream.bufferTime`,
 		whichever value is higher. For example, if `bufferTime` is 20 seconds,
 		Flash Player buffers until `NetStream.bufferLength` is the higher
-		value of either 20~~2 (40), or 60. In this case it buffers until
+		value of either 20*2 (40), or 60. In this case it buffers until
 		`bufferLength` is 60. If `bufferTime` is 40 seconds, Flash Player
-		buffers until `bufferLength` is the higher value of 40~~2 (80), or 60.
+		buffers until `bufferLength` is the higher value of 40*2 (80), or 60.
 		In this case it buffers until `bufferLength` is 80 seconds.
 
 		The `bufferLength` property also has an absolute limit. If any call to
 		`pause()` causes `bufferLength` to increase more than 600 seconds or
-		the value of `bufferTime` ~~ 2, whichever is higher, Flash Player
+		the value of `bufferTime`* 2, whichever is higher, Flash Player
 		flushes the buffer and resets `bufferLength` to 0. For example, if
 		`bufferTime` is 120 seconds, Flash Player flushes the buffer if
 		`bufferLength` reaches 600 seconds; if `bufferTime` is 360 seconds,
@@ -664,6 +681,8 @@ class NetStream extends EventDispatcher
 		persists. That is, `bufferTime` remains nonzero for the stream.
 	**/
 	public var bufferTime:Float;
+
+	#if false
 	/**
 		Specifies a maximum buffer length for live streaming content, in
 		seconds. The default value is 0. Buffer length can grow over time due
@@ -689,6 +708,7 @@ class NetStream extends EventDispatcher
 		(`NetStream.appendBytes()`).
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var bufferTimeMax:Float;
+	#end
 
 	/**
 		The number of bytes of data that have been loaded into the
@@ -781,16 +801,23 @@ class NetStream extends EventDispatcher
 		**To associate the `client` property with an event handler:**
 
 		1. Create an object and assign it to the `client` property of the
-		NetStream object: <codeblock xml:space="preserve"> var
-		customClient:Object = new Object(); my_netstream.client =
-		customClient; ```
+		NetStream object:
+		```as3
+		var customClient = new Object();
+		my_netstream.client = customClient;
+		```
 		2. Assign a handler function for the desired data event as a property
-		of the client object: <codeblock xml:space="preserve">
-		customClient.onImageData = onImageDataHandler; ```
+		of the client object:
+		```haxe
+		customClient.onImageData = onImageDataHandler;
+		```
 		3. Write the handler function to receive the data event object, such
-		as: <codeblock xml:space="preserve"> public function
-		onImageDataHandler(imageData:Object):void { trace("imageData length: "
-		+ imageData.data.length); } ```
+		as:
+		```as3
+		public function onImageDataHandler(imageData:Object):void {
+			trace("imageData length: " + imageData.data.length);
+		}
+		```
 
 		When data is passed through the stream or during playback, the data
 		event object (in this case the `imageData` object) is populated with
@@ -800,12 +827,18 @@ class NetStream extends EventDispatcher
 		**To associate the `client` property with a subclass:**
 
 		1. Create a subclass with a handler function to receive the data event
-		object: <codeblock xml:space="preserve"> class CustomClient { public
-		function onMetaData(info:Object):void { trace("metadata: duration=" +
-		info.duration + " framerate=" + info.framerate); } ```
+		object:
+		```as3
+		class CustomClient {
+			public function onMetaData(info:Object):void {
+				trace("metadata: duration=" + info.duration + " framerate=" + info.framerate);
+			}
+		```
 		2. Assign an instance of the subclass to the `client` property of the
-		NetStream object: <codeblock xml:space="preserve"> my_netstream.client
-		= new CustomClient(); ```
+		NetStream object:
+		```as3
+		my_netstream.client = new CustomClient();
+		```
 
 		When data is passed through the stream or during playback, the data
 		event object (in this case the `info` object) is populated with the
@@ -825,6 +858,7 @@ class NetStream extends EventDispatcher
 	**/
 	public var currentFPS(default, null):Float;
 
+	#if false
 	/**
 		For RTMFP connections, specifies whether `NetStream.send()` calls are
 		sent with full reliability. When TRUE, `NetStream.send()` calls that
@@ -838,18 +872,28 @@ class NetStream extends EventDispatcher
 		property is set to TRUE.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var dataReliable:Bool;
+	#end
+	@:dox(hide) @:noCompletion @SuppressWarnings("checkstyle:FieldDocComment")
 	public var decodedFrames(default, null):Int;
+
+	#if false
 	/**
 		For RTMFP connections, the identifier of the far end that is connected
 		to this NetStream instance.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farID (default, null):String;
+	#end
+
+	#if false
 	/**
 		For RTMFP and RTMPE connections, a value chosen substantially by the
 		other end of this stream, unique to this connection. This value
 		appears to the other end of the stream as its `nearNonce` value.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farNonce (default, null):String;
+	#end
+
+	#if false
 	/**
 		Specifies whether displayed data is cached for smart seeking (`TRUE`),
 		or not (`FALSE`). The default value is FALSE.
@@ -879,12 +923,16 @@ class NetStream extends EventDispatcher
 		`info.code` property contains the string `"NetStream.Step.Notify"`.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var inBufferSeek:Bool;
+	#end
+
+	#if false
 	/**
 		Returns a NetStreamInfo object whose properties contain statistics
 		about the quality of service. The object is a snapshot of the current
 		state.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var info (default, null):openfl.net.NetStreamInfo;
+	#end
 
 	/**
 		The number of seconds of data in the subscribing stream's buffer in
@@ -897,6 +945,8 @@ class NetStream extends EventDispatcher
 		transmission quality of the stream and communicate it to the user.
 	**/
 	public var liveDelay(default, null):Float;
+
+	#if false
 	/**
 		Specifies how long to buffer messages during pause mode, in seconds.
 		This property can be used to limit how much buffering is done during
@@ -907,6 +957,9 @@ class NetStream extends EventDispatcher
 		higher.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var maxPauseBufferTime:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies whether peer-to-peer multicast
 		fragment availability messages are sent to all peers or to just one
@@ -917,6 +970,9 @@ class NetStream extends EventDispatcher
 		property.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastAvailabilitySendToAll:Bool;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies the interval in seconds between
 		messages sent to peers informing them that the local node has new
@@ -928,6 +984,9 @@ class NetStream extends EventDispatcher
 		control overhead.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastAvailabilityUpdatePeriod:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies the time in seconds between when the
 		local node learns that a peer-to-peer multicast media fragment is
@@ -943,17 +1002,26 @@ class NetStream extends EventDispatcher
 		peer-to-peer mesh load balance.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastFetchPeriod:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, returns a NetStreamMulticastInfo object whose
 		properties contain statistics about the quality of service. The object
 		is a snapshot of the current state.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastInfo (default, null):openfl.net.NetStreamMulticastInfo;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies the maximum number of peers to which
 		to proactively push multicast media.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastPushNeighborLimit:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies the duration in seconds that
 		peer-to-peer multicast data remains available to send to peers that
@@ -961,6 +1029,9 @@ class NetStream extends EventDispatcher
 		the `multicastWindowDuration` property.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastRelayMarginDuration:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP connections, specifies the duration in seconds of the
 		peer-to-peer multicast reassembly window. Shorter values reduce
@@ -970,12 +1041,16 @@ class NetStream extends EventDispatcher
 		corresponding increase in latency.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var multicastWindowDuration:Float;
+	#end
+
+	#if false
 	/**
 		For RTMFP and RTMPE connections, a value chosen substantially by this
 		end of the stream, unique to this connection. This value appears to
 		the other end of the stream as its `farNonce` value.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var nearNonce (default, null):String;
+	#end
 
 	/**
 		The object encoding (AMF version) for this NetStream object. The
@@ -995,17 +1070,21 @@ class NetStream extends EventDispatcher
 		change this property, the application throws an exception.
 	**/
 	public var objectEncoding(default, null):ObjectEncoding;
+
+	#if false
 	/**
 		An object that holds all of the subscribing NetStream instances that
 		are listening to this publishing NetStream instance.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var peerStreams (default, null):Array<Dynamic>;
+	#end
 
 	/**
 		Controls sound in this NetStream object. For more information, see the
 		SoundTransform class.
 	**/
 	public var soundTransform:SoundTransform;
+	@:dox(hide) @:noCompletion @SuppressWarnings("checkstyle:FieldDocComment")
 	public var speed(get, set):Float;
 
 	/**
@@ -1032,6 +1111,7 @@ class NetStream extends EventDispatcher
 	// @:noCompletion @:dox(hide) @:require(flash11_3) public var useJitterBuffer:Bool;
 	public var videoCode(default, null):Int;
 
+	#if false
 	/**
 		For RTMFP connections, specifies whether video is sent with full
 		reliability. When TRUE, all video transmitted over this NetStream is
@@ -1044,7 +1124,9 @@ class NetStream extends EventDispatcher
 		property is set to TRUE.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var videoReliable:Bool;
+	#end
 
+	#if false
 	/**
 		For RTMFP connections, specifies whether peer-to-peer subscribers on
 		this NetStream are allowed to capture the video stream. When FALSE,
@@ -1052,6 +1134,7 @@ class NetStream extends EventDispatcher
 		errors.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public var videoSampleAccess:Bool;
+	#end
 	// @:noCompletion @:dox(hide) @:require(flash11) public var videoStreamSettings:openfl.media.VideoStreamSettings;
 	@:noCompletion private var __closed:Bool;
 	@:noCompletion private var __connection:NetConnection;
@@ -1140,6 +1223,7 @@ class NetStream extends EventDispatcher
 		#end
 	}
 
+	#if false
 	/**
 		Passes a ByteArray into a NetStream for playout. Call this method on a
 		NetStream in "Data Generation Mode". To put a NetStream into Data
@@ -1152,7 +1236,6 @@ class NetStream extends EventDispatcher
 		continuations of the same real or virtual file. Another header is not
 		expected unless
 		`appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)` is called.
-
 
 		A NetStream object has two buffers: the FIFO from `appendBytes()` to
 		the NetStream, and the playout buffer. The FIFO is the partial-FLV-tag
@@ -1176,6 +1259,9 @@ class NetStream extends EventDispatcher
 
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public function appendBytes (bytes:ByteArray):Void;
+	#end
+
+	#if false
 	/**
 		Indicates a timescale discontinuity, flushes the FIFO, and tells the
 		byte parser to expect a file header or the beginning of an FLV tag.
@@ -1191,6 +1277,9 @@ class NetStream extends EventDispatcher
 
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public function appendBytesAction (netStreamAppendBytesAction:String):Void;
+	#end
+
+	#if false
 	/**
 		Attaches a stream to a new NetConnection object. Call this method to
 		attach a NetStream to a new NetConnection object after a connection
@@ -1216,7 +1305,10 @@ class NetStream extends EventDispatcher
 		originally called `NetStream.play()` or `NetStream.play2()` to start
 		the stream.
 	**/
-	// @:noCompletion @:dox(hide) @:require(flash10_1) public function attach (connection:NetConnection):Void;
+	// @:noCompletion@:dox(hide) @:require(flash10_1) public function attach(connection:NetConnection):Void;
+	#end
+
+	#if false
 	/**
 		Attaches an audio stream to a NetStream object from a Microphone
 		object passed as the source. This method is available only to the
@@ -1229,13 +1321,21 @@ class NetStream extends EventDispatcher
 		capture device. Call `setSilenceLevel()` to set the silence level
 		threshold. To control the sound properties (volume and panning) of the
 		audio stream, use the `Microphone.soundTransform` property.
-		<pre xml:space="preserve"> var nc:NetConnection = new NetConnection();
-		nc.connect("rtmp://server.domain.com/app"); var ns:NetStream = new
-		NetStream(nc); var live_mic:Microphone = Microphone.get();
-		live_mic.rate = 8; live_mic.setSilenceLevel(20,200); var
-		soundTrans:SoundTransform = new SoundTransform(); soundTrans.volume =
-		6; live_mic.soundTransform = soundTrans; ns.attachAudio(live_mic);
-		ns.publish("mic_stream","live") </pre>
+
+		```haxe
+		var nc = new NetConnection();
+		nc.connect("rtmp://server.domain.com/app");
+		var ns = new NetStream(nc);
+		var live_mic = Microphone.get();
+		live_mic.rate = 8;
+		live_mic.setSilenceLevel(20,200);
+		var soundTrans = new SoundTransform();
+		soundTrans.volume = 6;
+		live_mic.soundTransform = soundTrans;
+		ns.attachAudio(live_mic);
+		ns.publish("mic_stream","live");
+		```
+
 		To hear the audio, call the `NetStream.play()` method and call
 		`DisplayObjectContainer.addChild()` to route the audio to an object on
 		the display list.
@@ -1243,6 +1343,9 @@ class NetStream extends EventDispatcher
 		@param microphone The source of the audio stream to be transmitted.
 	**/
 	// @:noCompletion @:dox(hide) public function attachAudio (microphone:openfl.media.Microphone):Void;
+	#end
+
+	#if false
 	/**
 		Starts capturing video from a camera, or stops capturing if
 		`theCamera` is set to `null`. This method is available only to the
@@ -1301,6 +1404,7 @@ class NetStream extends EventDispatcher
 						 send are ignored.
 	**/
 	// @:noCompletion @:dox(hide) public function attachCamera (theCamera:openfl.media.Camera, snapshotMilliseconds:Int = -1):Void;
+	#end
 
 	/**
 		Stops playing all data on the stream, sets the `time` property to 0,
@@ -1338,6 +1442,15 @@ class NetStream extends EventDispatcher
 		#end
 	}
 
+	/**
+		Releases all the resources held by the NetStream object.
+
+		The `dispose()` method is similar to the `close` method. The main difference
+		between the two methods is that `dispose()` releases the memory used to display
+		the current video frame. If that frame is currently displayed on screen, the
+		display will go blank. The `close()` method does not blank the display because it
+		does not release this memory.
+	**/
 	public function dispose():Void
 	{
 		#if (js && html5)
@@ -1346,20 +1459,29 @@ class NetStream extends EventDispatcher
 		#end
 	}
 
+	#if false
 	/**
 		Invoked when a peer-publishing stream matches a peer-subscribing
 		stream. Before the subscriber is connected to the publisher, call this
 		method to allow the ActionScript code fine access control for
 		peer-to-peer publishing. The following code shows an example of how to
-		create a callback function for this method: <codeblock
-		xml:space="preserve"> var c:Object = new Object; c.onPeerConnect =
-		function(subscriber:NetStream):Boolean { if (accept) return true; else
-		return false; }; m_netStream.client = c; ```
+		create a callback function for this method:
+
+		```as3
+		var c:Object = new Object;
+		c.onPeerConnect = function(subscriber:NetStream):Boolean {
+			if (accept) return true;
+			else return false;
+		};
+		m_netStream.client = c;
+		```
+
 		If a peer-publisher does not implement this method, all peers are
 		allowed to play any published content.
 
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public function onPeerConnect (subscriber:NetStream):Bool;
+	#end
 
 	/**
 		Pauses playback of a video stream. Calling this method does nothing if
@@ -1481,7 +1603,7 @@ class NetStream extends EventDispatcher
 					  with digital rights management (DRM). The value of the
 					  `code` property is `"DRM.encryptedFLV"`.
 	**/
-	public function play(url:String, ?_, ?_, ?_, ?_, ?_):Void
+	public function play(url:String, p1 = null, p2 = null, p3 = null, p4 = null, p5 = null):Void
 	{
 		#if (js && html5)
 		if (__video == null) return;
@@ -1491,6 +1613,7 @@ class NetStream extends EventDispatcher
 		#end
 	}
 
+	#if false
 	/**
 		Switches seamlessly between files with multiple bit rates and allows a
 		NetStream to resume when a connection is dropped and reconnected.
@@ -1539,6 +1662,9 @@ class NetStream extends EventDispatcher
 
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public function play2 (param:openfl.net.NetStreamPlayOptions):Void;
+	#end
+
+	#if false
 	/**
 		Sends streaming audio, video, and data messages from a client to Flash
 		Media Server, optionally recording the stream during transmission.
@@ -1580,22 +1706,36 @@ class NetStream extends EventDispatcher
 		instance of the "lectureseries" application and records a stream
 		called "lecture". The file "lecture.flv" is recorded in the
 		applications/lectureseries/streams/_definst_ directory:
-		<codeblock xml:space="preserve"> var nc:NetConnection = new
-		NetConnection(); nc.connect("rtmp://fms.example.com/lectureseries");
+
+		```as3
+		var nc:NetConnection = new NetConnection();
+		nc.connect("rtmp://fms.example.com/lectureseries");
 		nc.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
-		function netStatusHandler(event:NetStatusEvent):void{ if
-		(event.info.code == "NetConnection.Connect.Success"){ var ns:NetStream
-		= new NetStream(nc); ns.publish("lecture", "record"); } } ```
+
+		function netStatusHandler(event:NetStatusEvent):void{
+			if (event.info.code == "NetConnection.Connect.Success"){
+				var ns:NetStream = new NetStream(nc);
+				ns.publish("lecture", "record");
+			}
+		}
+		```
+
 		The following example connects to the "monday" instance of the same
 		application. The file "lecture.flv" is recorded in the directory
 		/applications/lectureseries/streams/monday:
-		<codeblock xml:space="preserve"> var nc:NetConnection = new
-		NetConnection(); nc.addEventListener(NetStatusEvent.NET_STATUS,
-		netStatusHandler);
-		nc.connect("rtmp://fms.example.com/lectureseries/monday"); function
-		netStatusHandler(event:NetStatusEvent):void{ if (event.info.code ==
-		"NetConnection.Connect.Success"){ var ns:NetStream = new
-		NetStream(nc); ns.publish("lecture", "record"); } } ```
+
+		```as3
+		var nc:NetConnection = new NetConnection();
+		nc.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+		nc.connect("rtmp://fms.example.com/lectureseries/monday");
+
+		function netStatusHandler(event:NetStatusEvent):void{
+			if (event.info.code == "NetConnection.Connect.Success"){
+				var ns:NetStream = new NetStream(nc);
+				ns.publish("lecture", "record");
+			}
+		}
+		```
 
 		@param name A string that identifies the stream. Clients that
 					subscribe to this stream pass this name when they call
@@ -1632,6 +1772,9 @@ class NetStream extends EventDispatcher
 					exists, it is deleted.
 	**/
 	// @:noCompletion @:dox(hide) public function publish (?name:String, ?type:String):Void;
+	#end
+
+	#if false
 	/**
 		Specifies whether incoming audio plays on the stream. This method is
 		available only to clients subscribed to the specified stream. It is
@@ -1648,6 +1791,9 @@ class NetStream extends EventDispatcher
 					`NetStream.time` stops incrementing when you pass `false`.
 	**/
 	// @:noCompletion @:dox(hide) public function receiveAudio (flag:Bool):Void;
+	#end
+
+	#if false
 	/**
 		Specifies whether incoming video plays on the stream. This method is
 		available only to clients subscribed to the specified stream. It is
@@ -1664,6 +1810,9 @@ class NetStream extends EventDispatcher
 					`NetStream.time` stops incrementing when you pass `false`.
 	**/
 	// @:noCompletion @:dox(hide) public function receiveVideo (flag:Bool):Void;
+	#end
+
+	#if false
 	/**
 		Specifies the frame rate for incoming video. This method is available
 		only to clients subscribed to the specified stream. It is not
@@ -1690,8 +1839,9 @@ class NetStream extends EventDispatcher
 				   video plays.
 	**/
 	// @:noCompletion @:dox(hide) public function receiveVideoFPS (FPS:Float):Void;
-	// //public function requestVideoStatus ():Void;
+	#end
 
+	#if false
 	/**
 		Deletes all locally cached digital rights management (DRM) voucher
 		data.
@@ -1703,6 +1853,8 @@ class NetStream extends EventDispatcher
 		@throws IOError The voucher data cannot be deleted.
 	**/
 	// @:noCompletion @:dox(hide) public static function resetDRMVouchers ():Void;
+	#end
+	@:dox(hide) @:noCompletion @SuppressWarnings("checkstyle:FieldDocComment")
 	public function requestVideoStatus():Void
 	{
 		#if (js && html5)
@@ -1836,6 +1988,7 @@ class NetStream extends EventDispatcher
 		#end
 	}
 
+	#if false
 	/**
 		Sends a message on a published stream to all subscribing clients. This
 		method is available only to the publisher of the specified stream.
@@ -1863,8 +2016,12 @@ class NetStream extends EventDispatcher
 		To add a keyframe of metadata to a live stream sent to Flash Media
 		Server, use `@setDataFrame` as the handler name, followed by two
 		additional arguments, for example:
-		<codeblock xml:space="preserve"> var ns:NetStream = new NetStream(nc);
-		ns.send("@setDataFrame", "onMetaData", metaData); ```
+
+		```as3
+		var ns:NetStream = new NetStream(nc);
+		ns.send("@setDataFrame", "onMetaData", metaData);
+		```
+
 		The `@setDataFrame` argument refers to a special handler built in to
 		Flash Media Server. The `onMetaData` argument is the name of a
 		callback function in your client application that listens for the
@@ -1874,8 +2031,10 @@ class NetStream extends EventDispatcher
 
 		Use `@clearDataFrame` to clear a keyframe of metadata that has already
 		been set in the stream:
-		<codeblock xml:space="preserve"> ns.send("@clearDataFrame",
-		"onMetaData"); ```
+
+		```as3
+		ns.send("@clearDataFrame", "onMetaData");
+		```
 
 		@param handlerName The message to send; also the name of the
 						   ActionScript handler to receive the message. The
@@ -1890,6 +2049,9 @@ class NetStream extends EventDispatcher
 						   keyframe.
 	**/
 	// @:noCompletion @:dox(hide) public function send (handlerName:String, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Void;
+	#end
+
+	#if false
 	/**
 		Steps forward or back the specified number of frames, relative to the
 		currently displayed frame. Specify a positive number to step forward
@@ -1913,6 +2075,7 @@ class NetStream extends EventDispatcher
 
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public function step (frames:Int):Void;
+	#end
 
 	/**
 		Pauses or resumes playback of a stream. The first time you call this

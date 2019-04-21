@@ -31,7 +31,7 @@ class ContextMenuEvent extends Event
 		| `mouseTarget` | The display list object on which the user right-clicked to display the context menu. |
 		| `target` | The ContextMenuItem object that has been selected. The target is not always the object in the display list that registered the event listener. Use the `currentTarget` property to access the object in the display list that is currently processing the event. |
 	**/
-	public static inline var MENU_ITEM_SELECT:String = "menuItemSelect";
+	public static inline var MENU_ITEM_SELECT:EventType<ContextMenuEvent> = "menuItemSelect";
 
 	/**
 		Defines the value of the `type` property of a `menuSelect` event
@@ -47,7 +47,7 @@ class ContextMenuEvent extends Event
 		| `mouseTarget` | The display list object on which the user right-clicked to display the context menu. |
 		| `target` | The ContextMenu object that is about to be displayed. The target is not always the object in the display list that registered the event listener. Use the `currentTarget` property to access the object in the display list that is currently processing the event. |
 	**/
-	public static inline var MENU_SELECT:String = "menuSelect";
+	public static inline var MENU_SELECT:EventType<ContextMenuEvent> = "menuSelect";
 
 	/**
 		The display list object to which the menu is attached. This could be
@@ -55,6 +55,8 @@ class ContextMenuEvent extends Event
 		display list.
 	**/
 	public var contextMenuOwner:InteractiveObject;
+
+	#if false
 	/**
 		Indicates whether the `mouseTarget` property was set to `null` for
 		security reasons. If the nominal value of `menuTarget` would be a
@@ -66,6 +68,7 @@ class ContextMenuEvent extends Event
 		`LoaderContext.checkPolicyFile` flag when loading the image.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var isMouseTargetInaccessible:Bool;
+	#end
 
 	/**
 		The display list object on which the user right-clicked to display the
@@ -114,7 +117,7 @@ class ContextMenuEvent extends Event
 		this.contextMenuOwner = contextMenuOwner;
 	}
 
-	public override function clone():Event
+	public override function clone():ContextMenuEvent
 	{
 		var event = new ContextMenuEvent(type, bubbles, cancelable, mouseTarget, contextMenuOwner);
 		event.target = target;

@@ -7,12 +7,17 @@ import lime.ui.Window as LimeWindow;
 import lime.ui.WindowAttributes;
 #end
 
+/**
+	The Window class is a Lime Window instance that automatically
+	initializes an OpenFL stage for the current window.
+**/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
 @:access(openfl.display.LoaderInfo)
 @:access(openfl.display.Stage)
+@SuppressWarnings("checkstyle:FieldDocComment")
 class Window #if lime extends LimeWindow #end
 {
 	#if !lime

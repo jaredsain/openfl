@@ -115,7 +115,6 @@ class SWFRoot extends SWFTimelineContainer
 			trace("abcData.functions:");
 			trace(abcData.functions);
 			trace(".--"); */
-
 		/*
 			var cuadClass:ClassDef = abcData.classes[0];
 
@@ -333,7 +332,7 @@ class SWFRoot extends SWFTimelineContainer
 		{
 			s += "None";
 		}
-		return s + "\n    FileLength: " + fileLength + "\n" + "    FileLengthCompressed: " + fileLengthCompressed + "\n" + "    FrameSize: " + frameSize
-			.toStringSize() + "\n" + "    FrameRate: " + frameRate + "\n" + "    FrameCount: " + frameCount + super.toString(indent);
+		return s + "\n    FileLength: " + fileLength + "\n" + "    FileLengthCompressed: " + fileLengthCompressed + "\n" + "    FrameSize: "
+			+ frameSize.toStringSize() + "\n" + "    FrameRate: " + frameRate + "\n" + "    FrameCount: " + frameCount + super.toString(indent);
 	}
 }

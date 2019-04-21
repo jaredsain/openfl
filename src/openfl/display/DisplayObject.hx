@@ -17,8 +17,9 @@ import openfl._internal.utils.ObjectPool;
 import openfl._internal.Lib;
 import openfl.errors.TypeError;
 import openfl.events.Event;
-import openfl.events.EventPhase;
 import openfl.events.EventDispatcher;
+import openfl.events.EventPhase;
+import openfl.events.EventType;
 import openfl.events.MouseEvent;
 import openfl.events.RenderEvent;
 import openfl.events.TouchEvent;
@@ -168,7 +169,7 @@ import js.html.CSSStyleDeclaration;
 							**Note: **This event is not dispatched if the
 							display is not rendering. This is the case when the
 							content is either minimized or obscured.
- */
+**/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -201,13 +202,22 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	@:noCompletion private static var __tempStack:ObjectPool<Vector<DisplayObject>> = new ObjectPool<Vector<DisplayObject>>(function() return
 		new Vector<DisplayObject>(), function(stack) stack.length = 0);
 
+	#if false
+	/**
+		The current accessibility options for this display object. If you modify the `accessibilityProperties`
+		property or any of the fields within `accessibilityProperties`, you must call the
+		`Accessibility.updateProperties()` method to make your changes take effect.
+
+		**Note:** For an object created in the Flash authoring environment, the value of `accessibilityProperties`
+		is prepopulated with any information you entered in the Accessibility panel for that object.
+	**/
 	// @:noCompletion @:dox(hide) public var accessibilityProperties:openfl.accessibility.AccessibilityProperties;
+	#end
 
 	/**
 		Indicates the alpha transparency value of the object specified. Valid
-		values are 0(fully transparent) to 1(fully opaque). The default value is
-		1. Display objects with `alpha` set to 0 _are_ active,
-		even though they are invisible.
+		values are 0 (fully transparent) to 1 (fully opaque). The default value is 1.
+		Display objects with `alpha` set to 0 _are_ active, even though they are invisible.
 	**/
 	@:keep public var alpha(get, set):Float;
 
@@ -234,9 +244,54 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		BlendMode class defines string values you can use. The illustrations in
 		the table show `blendMode` values applied to a circular display
 		object(2) superimposed on another display object(1).
+
+		![Square Number 1](/images/blendMode-0a.jpg)  ![Circle Number 2](/images/blendMode-0b.jpg)
+
+		| BlendMode Constant | Illustration | Description |
+		| --- | --- | --- |
+		| `BlendMode.NORMAL` | ![blend mode NORMAL](/images/blendMode-1.jpg) | The display object appears in front of the background. Pixel values of the display object override those of the background. Where the display object is transparent, the background is visible. |
+		| `BlendMode.LAYER` | ![blend mode LAYER](/images/blendMode-2.jpg) | Forces the creation of a transparency group for the display object. This means that the display object is pre-composed in a temporary buffer before it is processed further. This is done automatically if the display object is pre-cached using bitmap caching or if the display object is a display object container with at least one child object with a `blendMode` setting other than `BlendMode.NORMAL`. Not supported under GPU rendering. |
+		| `BlendMode.MULTIPLY` | ![blend mode MULTIPLY](/images/blendMode-3.jpg) | Multiplies the values of the display object constituent colors by the colors of the background color, and then normalizes by dividing by 0xFF, resulting in darker colors. This setting is commonly used for shadows and depth effects.<br>For example, if a constituent color (such as red) of one pixel in the display object and the corresponding color of the pixel in the background both have the value 0x88, the multiplied result is 0x4840. Dividing by 0xFF yields a value of 0x48 for that constituent color, which is a darker shade than the color of the display object or the color of the background. |
+		| `BlendMode.SCREEN` | ![blend mode SCREEN](/images/blendMode-4.jpg) | Multiplies the complement (inverse) of the display object color by the complement of the background color, resulting in a bleaching effect. This setting is commonly used for highlights or to remove black areas of the display object. |
+		| `BlendMode.LIGHTEN` | ![blend mode LIGHTEN](/images/blendMode-5.jpg) | Selects the lighter of the constituent colors of the display object and the color of the background (the colors with the larger values). This setting is commonly used for superimposing type.<br>For example, if the display object has a pixel with an RGB value of 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the resulting RGB value for the displayed pixel is 0xFFF833 (because 0xFF > 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33). Not supported under GPU rendering. |
+		| `BlendMode.DARKEN` | ![blend mode DARKEN](/images/blendMode-6.jpg) | Selects the darker of the constituent colors of the display object and the colors of the background (the colors with the smaller values). This setting is commonly used for superimposing type.<br>For example, if the display object has a pixel with an RGB value of 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the resulting RGB value for the displayed pixel is 0xDDCC00 (because 0xFF > 0xDD, 0xCC < 0xF8, and 0x33 > 0x00 = 33). Not supported under GPU rendering. |
+		| `BlendMode.DIFFERENCE` | ![blend mode DIFFERENCE](/images/blendMode-7.jpg) | Compares the constituent colors of the display object with the colors of its background, and subtracts the darker of the values of the two constituent colors from the lighter value. This setting is commonly used for more vibrant colors.<br>For example, if the display object has a pixel with an RGB value of 0xFFCC33, and the background pixel has an RGB value of 0xDDF800, the resulting RGB value for the displayed pixel is 0x222C33 (because 0xFF - 0xDD = 0x22, 0xF8 - 0xCC = 0x2C, and 0x33 - 0x00 = 0x33). |
+		| `BlendMode.ADD` | ![blend mode ADD](/images/blendMode-8.jpg) | Adds the values of the constituent colors of the display object to the colors of its background, applying a ceiling of 0xFF. This setting is commonly used for animating a lightening dissolve between two objects.<br>For example, if the display object has a pixel with an RGB value of 0xAAA633, and the background pixel has an RGB value of 0xDD2200, the resulting RGB value for the displayed pixel is 0xFFC833 (because 0xAA + 0xDD > 0xFF, 0xA6 + 0x22 = 0xC8, and 0x33 + 0x00 = 0x33). |
+		| `BlendMode.SUBTRACT` | ![blend mode SUBTRACT](/images/blendMode-9.jpg) | Subtracts the values of the constituent colors in the display object from the values of the background color, applying a floor of 0. This setting is commonly used for animating a darkening dissolve between two objects.<br>For example, if the display object has a pixel with an RGB value of 0xAA2233, and the background pixel has an RGB value of 0xDDA600, the resulting RGB value for the displayed pixel is 0x338400 (because 0xDD - 0xAA = 0x33, 0xA6 - 0x22 = 0x84, and 0x00 - 0x33 < 0x00). |
+		| `BlendMode.INVERT` | ![blend mode INVERT](/images/blendMode-10.jpg) | Inverts the background. |
+		| `BlendMode.ALPHA` | ![blend mode ALPHA](/images/blendMode-11.jpg) | Applies the alpha value of each pixel of the display object to the background. This requires the `blendMode` setting of the parent display object to be set to `BlendMode.LAYER`. For example, in the illustration, the parent display object, which is a white background, has `blendMode = BlendMode.LAYER`. Not supported under GPU rendering. |
+		| `BlendMode.ERASE` | ![blend mode ERASE](/images/blendMode-12.jpg) | Erases the background based on the alpha value of the display object. This requires the `blendMode` of the parent display object to be set to `BlendMode.LAYER`. For example, in the illustration, the parent display object, which is a white background, has `blendMode = BlendMode.LAYER`. Not supported under GPU rendering. |
+		| `BlendMode.OVERLAY` | ![blend mode OVERLAY](/images/blendMode-13.jpg) | Adjusts the color of each pixel based on the darkness of the background. If the background is lighter than 50% gray, the display object and background colors are screened, which results in a lighter color. If the background is darker than 50% gray, the colors are multiplied, which results in a darker color. This setting is commonly used for shading effects. Not supported under GPU rendering. |
+		| `BlendMode.HARDLIGHT` | ![blend mode HARDLIGHT](/images/blendMode-14.jpg) | Adjusts the color of each pixel based on the darkness of the display object. If the display object is lighter than 50% gray, the display object and background colors are screened, which results in a lighter color. If the display object is darker than 50% gray, the colors are multiplied, which results in a darker color. This setting is commonly used for shading effects. Not supported under GPU rendering. |
+		| `BlendMode.SHADER` | N/A | Adjusts the color using a custom shader routine. The shader that is used is specified as the Shader instance assigned to the blendShader property. Setting the blendShader property of a display object to a Shader instance automatically sets the display object's `blendMode` property to `BlendMode.SHADER`. If the `blendMode` property is set to `BlendMode.SHADER` without first setting the `blendShader` property, the `blendMode` property is set to `BlendMode.NORMAL`. Not supported under GPU rendering. |
 	**/
 	public var blendMode(get, set):BlendMode;
-	// @:noCompletion @:dox(hide) @:require(flash10) public var blendShader (null, default):Shader;
+
+	#if false
+	/**
+		Sets a shader that is used for blending the foreground and background. When the `blendMode` property is set
+		to `BlendMode.SHADER`, the specified Shader is used to create the blend mode output for the display object.
+
+		Setting the `blendShader` property of a display object to a Shader instance automatically sets the display
+		object's `blendMode` property to `BlendMode.SHADER`. If the `blendShader` property is set (which sets the
+		`blendMode` property to `BlendMode.SHADER`), then the value of the `blendMode` property is changed, the
+		blend mode can be reset to use the blend shader simply by setting the `blendMode` property to
+		`BlendMode.SHADER`. The `blendShader` property does not need to be set again except to change the shader
+		that's used for the blend mode.
+
+		The Shader assigned to the `blendShader` property must specify at least two `image4` inputs. The inputs do
+		not need to be specified in code using the associated ShaderInput objects' input properties. The background
+		display object is automatically used as the first input (the input with index 0). The foreground display
+		object is used as the second input (the input with index 1). A shader used as a blend shader can specify more
+		than two inputs. In that case, any additional input must be specified by setting its ShaderInput instance's
+		`input` property.
+
+		When you assign a Shader instance to this property the shader is copied internally. The blend operation uses
+		that internal copy, not a reference to the original shader. Any changes made to the shader, such as changing
+		a parameter value, input, or bytecode, are not applied to the copied shader that's used for the blend mode.
+	**/
+	// @:noCompletion @:dox(hide) @:require(flash10) public var blendShader(null, default):Shader;
+	#end
 
 	/**
 		All vector data for a display object that has a cached bitmap is drawn
@@ -287,6 +342,56 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		and _y_ position is changed).
 	**/
 	public var cacheAsBitmap(get, set):Bool;
+
+	/**
+		If non-null, this Matrix object defines how a display object is rendered when `cacheAsBitmap` is set to
+		`true`. The application uses this matrix as a transformation matrix that is applied when rendering the
+		bitmap version of the display object.
+
+		_AIR profile support:_ This feature is supported on mobile devices, but it is not supported on desktop
+		operating systems. It also has limited support on AIR for TV devices. Specifically, on AIR for TV devices,
+		supported transformations include scaling and translation, but not rotation and skewing. See AIR Profile
+		Support for more information regarding API support across multiple profiles.
+
+		With `cacheAsBitmapMatrix` set, the application retains a cached bitmap image across various 2D
+		transformations, including translation, rotation, and scaling. If the application uses hardware acceleration,
+		the object will be stored in video memory as a texture. This allows the GPU to apply the supported
+		transformations to the object. The GPU can perform these transformations faster than the CPU.
+
+		To use the hardware acceleration, set Rendering to GPU in the General tab of the iPhone Settings dialog box
+		in Flash Professional CS5. Or set the `renderMode` property to gpu in the application descriptor file. Note
+		that AIR for TV devices automatically use hardware acceleration if it is available.
+
+		For example, the following code sends an untransformed bitmap representation of the display object to the GPU:
+
+		```haxe
+		var matrix:Matrix = new Matrix(); // creates an identity matrix
+		mySprite.cacheAsBitmapMatrix = matrix;
+		mySprite.cacheAsBitmap = true;
+		```
+
+		Usually, the identity matrix (`new Matrix()`) suffices. However, you can use another matrix, such as a
+		scaled-down matrix, to upload a different bitmap to the GPU. For example, the following example applies a
+		`cacheAsBitmapMatrix` matrix that is scaled by 0.5 on the x and y axes. The bitmap object that the GPU uses
+		is smaller, however the GPU adjusts its size to match the `transform.matrix` property of the display object:
+
+		```haxe
+		var matrix:Matrix = new Matrix(); // creates an identity matrix
+		matrix.scale(0.5, 0.5); // scales the matrix
+		mySprite.cacheAsBitmapMatrix = matrix;
+		mySprite.cacheAsBitmap = true;
+		```
+
+		Generally, you should choose to use a matrix that transforms the display object to the size that it will
+		appear in the application. For example, if your application displays the bitmap version of the sprite scaled
+		down by a half, use a matrix that scales down by a half. If you application will display the sprite larger
+		than its current dimensions, use a matrix that scales up by that factor.
+
+		**Note:** The `cacheAsBitmapMatrix` property is suitable for 2D transformations. If you need to apply
+		transformations in 3D, you may do so by setting a 3D property of the object and manipulating its
+		`transform.matrix3D` property. If the application is packaged using GPU mode, this allows the 3D transforms
+		to be applied to the object by the GPU. The `cacheAsBitmapMatrix` is ignored for 3D objects.
+	**/
 	public var cacheAsBitmapMatrix(get, set):Matrix;
 
 	/**
@@ -491,6 +596,10 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		You can use `parent` to move up multiple levels in the
 		display list as in the following:
 
+		```haxe
+		this.parent.parent.alpha = 20;
+		```
+
 		@throws SecurityError The parent display object belongs to a security
 							  sandbox to which you do not have access. You can
 							  avoid this situation by having the parent movie call
@@ -535,9 +644,36 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		is the same as ` my_video.rotation = 90`.
 	**/
 	@:keep public var rotation(get, set):Float;
+
+	#if false
+	/**
+		Indicates the x-axis rotation of the DisplayObject instance, in degrees, from its original orientation
+		relative to the 3D parent container. Values from 0 to 180 represent clockwise rotation; values from 0 to
+		-180 represent counterclockwise rotation. Values outside this range are added to or subtracted from 360 to
+		obtain a value within the range.
+	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var rotationX:Float;
+	#end
+
+	#if false
+	/**
+		Indicates the y-axis rotation of the DisplayObject instance, in degrees, from its original orientation
+		relative to the 3D parent container. Values from 0 to 180 represent clockwise rotation; values from 0 to
+		-180 represent counterclockwise rotation. Values outside this range are added to or subtracted from 360 to
+		obtain a value within the range.
+	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var rotationY:Float;
+	#end
+
+	#if false
+	/**
+		Indicates the z-axis rotation of the DisplayObject instance, in degrees, from its original orientation
+		relative to the 3D parent container. Values from 0 to 180 represent clockwise rotation; values from 0 to
+		-180 represent counterclockwise rotation. Values outside this range are added to or subtracted from 360 to
+		obtain a value within the range.
+	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var rotationZ:Float;
+	#end
 
 	/**
 		The current scaling grid that is in effect. If set to `null`,
@@ -558,9 +694,12 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		* The area below the rectangle
 		* The lower-right corner outside of the rectangle
 
-		You can think of the eight regions outside of the center(defined by
+		You can think of the eight regions outside of the center (defined by
 		the rectangle) as being like a picture frame that has special rules
 		applied to it when scaled.
+
+		**Note:** Content that is not rendered through the `graphics` interface
+		of a display object will not be affected by the `scale9Grid` property.
 
 		When the `scale9Grid` property is set and a display object
 		is scaled, all text and gradients are scaled normally; however, for other
@@ -570,7 +709,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		* Content in the corners is not scaled.
 		* Content in the top and bottom regions is scaled horizontally only.
 		* Content in the left and right regions is scaled vertically only.
-		* All fills(including bitmaps, video, and gradients) are stretched to
+		* All fills (including bitmaps, video, and gradients) are stretched to
 		fit their shapes.
 
 		If a display object is rotated, all subsequent scaling is normal(and
@@ -579,17 +718,31 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		For example, consider the following display object and a rectangle that
 		is applied as the display object's `scale9Grid`:
 
+		| | |
+		| --- | --- |
+		| ![display object image](/images/scale9Grid-a.jpg)<br>The display object. | ![display object scale 9 region](/images/scale9Grid-b.jpg)<br>The red rectangle shows the scale9Grid. |
+
+		When the display object is scaled or stretched, the objects within the rectangle scale normally, but the
+		objects outside of the rectangle scale according to the `scale9Grid` rules:
+
+		| | |
+		| --- | --- |
+		| Scaled to 75%: | ![display object at 75%](/images/scale9Grid-c.jpg) |
+		| Scaled to 50%: | ![display object at 50%](/images/scale9Grid-d.jpg) |
+		| Scaled to 25%: | ![display object at 25%](/images/scale9Grid-e.jpg) |
+		| Stretched horizontally 150%: | ![display stretched 150%](/images/scale9Grid-f.jpg) |
+
 		A common use for setting `scale9Grid` is to set up a display
 		object to be used as a component, in which edge regions retain the same
 		width when the component is scaled.
 
 		@throws ArgumentError If you pass an invalid argument to the method.
 	**/
-	public var scale9Grid:Rectangle;
+	public var scale9Grid(get, set):Rectangle;
 
 	/**
-		Indicates the horizontal scale(percentage) of the object as applied from
-		the registration point. The default registration point is(0,0). 1.0
+		Indicates the horizontal scale (percentage) of the object as applied from
+		the registration point. The default registration point is (0,0). 1.0
 		equals 100% scale.
 
 		Scaling the local coordinate system changes the `x` and
@@ -598,15 +751,25 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	@:keep public var scaleX(get, set):Float;
 
 	/**
-		Indicates the vertical scale(percentage) of an object as applied from the
-		registration point of the object. The default registration point is(0,0).
+		Indicates the vertical scale (percentage) of an object as applied from the
+		registration point of the object. The default registration point is (0,0).
 		1.0 is 100% scale.
 
 		Scaling the local coordinate system changes the `x` and
 		`y` property values, which are defined in whole pixels.
 	**/
 	@:keep public var scaleY(get, set):Float;
+
+	#if false
+	/**
+		Indicates the depth scale (percentage) of an object as applied from the registration point of the object.
+		The default registration point is (0,0). 1.0 is 100% scale.
+
+		Scaling the local coordinate system changes the `x`, `y` and `z` property values, which are defined in whole
+		pixels.
+	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var scaleZ:Float;
+	#end
 
 	/**
 		The scroll rectangle bounds of the display object. The display object is
@@ -631,6 +794,15 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		up and down.
 	**/
 	public var scrollRect(get, set):Rectangle;
+
+	/**
+		**BETA**
+
+		Applies a custom Shader object to use when rendering this display object (or its children) when using
+		hardware rendering. This occurs as a single-pass render on this object only, if visible. In order to
+		apply a post-process effect to multiple display objects at once, enable `cacheAsBitmap` or use the
+		`filters` property with a ShaderFilter
+	**/
 	@:beta public var shader(get, set):Shader;
 
 	/**
@@ -764,6 +936,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	@:noCompletion private var __rotation:Float;
 	@:noCompletion private var __rotationCosine:Float;
 	@:noCompletion private var __rotationSine:Float;
+	@:noCompletion private var __scale9Grid:Rectangle;
 	@:noCompletion private var __scaleX:Float;
 	@:noCompletion private var __scaleY:Float;
 	@:noCompletion private var __scrollRect:Rectangle;
@@ -779,6 +952,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	@:noCompletion private var __worldClipChanged:Bool;
 	@:noCompletion private var __worldColorTransform:ColorTransform;
 	@:noCompletion private var __worldShader:Shader;
+	@:noCompletion private var __worldScale9Grid:Rectangle;
 	@:noCompletion private var __worldTransform:Matrix;
 	@:noCompletion private var __worldVisible:Bool;
 	@:noCompletion private var __worldVisibleChanged:Bool;
@@ -939,7 +1113,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	}
 
 	@SuppressWarnings("checkstyle:Dynamic")
-	public override function addEventListener(type:String, listener:Dynamic->Void, useCapture:Bool = false, priority:Int = 0,
+	public override function addEventListener<T>(type:EventType<T>, listener:T->Void, useCapture:Bool = false, priority:Int = 0,
 			useWeakReference:Bool = false):Void
 	{
 		switch (type)
@@ -1181,8 +1355,9 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	}
 
 	// @:noCompletion @:dox(hide) @:require(flash10) public function local3DToGlobal (point3d:Vector3D):Point;
+
 	@SuppressWarnings("checkstyle:Dynamic")
-	public override function removeEventListener(type:String, listener:Dynamic->Void, useCapture:Bool = false):Void
+	public override function removeEventListener<T>(type:EventType<T>, listener:T->Void, useCapture:Bool = false):Void
 	{
 		super.removeEventListener(type, listener, useCapture);
 
@@ -1359,8 +1534,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 			for (filter in __filters)
 			{
-				extension.__expand(-filter.__leftExtension, -filter.__topExtension, filter.__leftExtension + filter.__rightExtension,
-					filter.__topExtension + filter.__bottomExtension);
+				extension.__expand(-filter.__leftExtension, -filter.__topExtension, filter.__leftExtension + filter.__rightExtension, filter
+					.__topExtension + filter.__bottomExtension);
 			}
 
 			rect.width += extension.width;
@@ -1730,11 +1905,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	{
 		var renderParent = __renderParent != null ? __renderParent : parent;
 		if (__isMask && renderParent == null) renderParent = __maskTarget;
-		__renderable = (__visible
-			&& __scaleX != 0
-			&& __scaleY != 0
-			&& !__isMask
-			&& (renderParent == null || !renderParent.__isMask));
+		__renderable = (__visible && __scaleX != 0 && __scaleY != 0 && !__isMask && (renderParent == null || !renderParent.__isMask));
 		__updateTransforms();
 
 		// if (updateChildren && __transformDirty) {
@@ -1806,6 +1977,15 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 				{
 					__worldShader = __shader;
 				}
+
+				if (__scale9Grid == null)
+				{
+					__worldScale9Grid = renderParent.__scale9Grid;
+				}
+				else
+				{
+					__worldScale9Grid = __scale9Grid;
+				}
 			}
 			else
 			{
@@ -1827,6 +2007,10 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 				{
 					__worldColorTransform.__identity();
 				}
+
+				__worldBlendMode = __blendMode;
+				__worldShader = __shader;
+				__worldScale9Grid = __scale9Grid;
 			}
 
 			// if (updateChildren && __renderDirty) {
@@ -1911,17 +2095,20 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 			var bitmapMatrix = (__cacheAsBitmapMatrix != null ? __cacheAsBitmapMatrix : __renderTransform);
 
-			if (!needRender && (bitmapMatrix.a != __cacheBitmapMatrix.a
-				|| bitmapMatrix.b != __cacheBitmapMatrix.b
-				|| bitmapMatrix.c != __cacheBitmapMatrix.c
-				|| bitmapMatrix.d != __cacheBitmapMatrix.d))
+			if (!needRender
+				&& (bitmapMatrix.a != __cacheBitmapMatrix.a
+					|| bitmapMatrix.b != __cacheBitmapMatrix.b
+					|| bitmapMatrix.c != __cacheBitmapMatrix.c
+					|| bitmapMatrix.d != __cacheBitmapMatrix.d))
 			{
 				needRender = true;
 			}
 
 			if (!needRender
 				&& renderer.__type != OPENGL
-				&& __cacheBitmapData != null && __cacheBitmapData.image != null && __cacheBitmapData.image.version < __cacheBitmapData.__textureVersion)
+				&& __cacheBitmapData != null
+				&& __cacheBitmapData.image != null
+				&& __cacheBitmapData.image.version < __cacheBitmapData.__textureVersion)
 			{
 				needRender = true;
 			}
@@ -1981,9 +2168,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 					var bitmapColor = needsFill ? 0 : fillColor;
 					var allowFramebuffer = (renderer.__type == OPENGL);
 
-					if (__cacheBitmapData == null
-						|| bitmapWidth > __cacheBitmapData.width
-						|| bitmapHeight > __cacheBitmapData.height)
+					if (__cacheBitmapData == null || bitmapWidth > __cacheBitmapData.width || bitmapHeight > __cacheBitmapData.height)
 					{
 						__cacheBitmapData = new BitmapData(bitmapWidth, bitmapHeight, true, bitmapColor);
 
@@ -2286,9 +2471,10 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 						if (needSecondBitmapData)
 						{
-							if (__cacheBitmapData2 == null || __cacheBitmapData2.image == null
-									|| bitmapWidth > __cacheBitmapData2.width
-									|| bitmapHeight > __cacheBitmapData2.height)
+							if (__cacheBitmapData2 == null
+								|| __cacheBitmapData2.image == null
+								|| bitmapWidth > __cacheBitmapData2.width
+								|| bitmapHeight > __cacheBitmapData2.height)
 							{
 								__cacheBitmapData2 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
 							}
@@ -2305,9 +2491,10 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 						if (needCopyOfOriginal)
 						{
-							if (__cacheBitmapData3 == null || __cacheBitmapData3.image == null
-									|| bitmapWidth > __cacheBitmapData3.width
-									|| bitmapHeight > __cacheBitmapData3.height)
+							if (__cacheBitmapData3 == null
+								|| __cacheBitmapData3.image == null
+								|| bitmapWidth > __cacheBitmapData3.width
+								|| bitmapHeight > __cacheBitmapData3.height)
 							{
 								__cacheBitmapData3 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
 							}
@@ -2676,6 +2863,36 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		return value;
 	}
 
+	@:noCompletion private function get_scale9Grid():Rectangle
+	{
+		if (__scale9Grid == null)
+		{
+			return null;
+		}
+
+		return __scale9Grid.clone();
+	}
+
+	@:noCompletion private function set_scale9Grid(value:Rectangle):Rectangle
+	{
+		if (value == null && __scale9Grid == null) return value;
+		if (value != null && __scale9Grid != null && __scale9Grid.equals(value)) return value;
+
+		if (value != null)
+		{
+			if (__scale9Grid == null) __scale9Grid = new Rectangle();
+			__scale9Grid.copyFrom(value);
+		}
+		else
+		{
+			__scale9Grid = null;
+		}
+
+		__setRenderDirty();
+
+		return value;
+	}
+
 	@:keep @:noCompletion private function get_scaleX():Float
 	{
 		return __scaleX;
@@ -2816,8 +3033,8 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		__setTransformDirty();
 		__objectTransform.matrix = value.matrix;
 
-		if (!__objectTransform.colorTransform.__equals(value.colorTransform, true) || (!cacheAsBitmap && __objectTransform.colorTransform
-			.alphaMultiplier != value.colorTransform.alphaMultiplier))
+		if (!__objectTransform.colorTransform.__equals(value.colorTransform, true)
+			|| (!cacheAsBitmap && __objectTransform.colorTransform.alphaMultiplier != value.colorTransform.alphaMultiplier))
 		{
 			__objectTransform.colorTransform.__copyFrom(value.colorTransform);
 			__setRenderDirty();

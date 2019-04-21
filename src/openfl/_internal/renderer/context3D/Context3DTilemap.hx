@@ -64,8 +64,8 @@ class Context3DTilemap
 		if (tilemap.tileAlphaEnabled) dataPerVertex++;
 		if (tilemap.tileColorTransformEnabled) dataPerVertex += 8;
 
-		buildBufferTileContainer(tilemap, tilemap.__group, renderer, parentTransform, tilemap.__tileset, tilemap.tileAlphaEnabled, tilemap.__worldAlpha, tilemap
-			.tileColorTransformEnabled, tilemap.__worldColorTransform, null, rect, matrix);
+		buildBufferTileContainer(tilemap, tilemap.__group, renderer, parentTransform, tilemap.__tileset, tilemap.tileAlphaEnabled, tilemap.__worldAlpha,
+			tilemap.tileColorTransformEnabled, tilemap.__worldColorTransform, null, rect, matrix);
 
 		Rectangle.__pool.release(rect);
 		Matrix.__pool.release(matrix);
@@ -279,7 +279,7 @@ class Context3DTilemap
 		{
 			var shader = renderer.__initDisplayShader(cast currentShader);
 			renderer.setShader(shader);
-			renderer.applyBitmapData(currentBitmapData, renderer.__allowSmoothing && tilemap.smoothing);
+			renderer.applyBitmapData(currentBitmapData, tilemap.smoothing);
 			renderer.applyMatrix(renderer.__getMatrix(tilemap.__renderTransform, AUTO));
 
 			if (tilemap.tileAlphaEnabled)
@@ -395,8 +395,8 @@ class Context3DTilemap
 		rect.setTo(0, 0, tilemap.__width, tilemap.__height);
 		renderer.__pushMaskRect(rect, tilemap.__renderTransform);
 
-		renderTileContainer(tilemap, renderer, tilemap.__group, cast tilemap.__worldShader, tilemap.__tileset, tilemap.__worldAlpha, tilemap
-			.tileBlendModeEnabled, currentBlendMode, null);
+		renderTileContainer(tilemap, renderer, tilemap.__group, cast tilemap.__worldShader, tilemap.__tileset, tilemap.__worldAlpha,
+			tilemap.tileBlendModeEnabled, currentBlendMode, null);
 		flush(tilemap, renderer, currentBlendMode);
 
 		// renderer.filterManager.popObject (tilemap);
@@ -452,9 +452,9 @@ class Context3DTilemap
 					if (tileData == null) continue;
 				}
 
-				if (
-					(shader != currentShader && currentShader != null) || (bitmapData != currentBitmapData && currentBitmapData != null) || (currentBlendMode != blendMode)
-				)
+				if ((shader != currentShader)
+					|| (bitmapData != currentBitmapData && currentBitmapData != null)
+					|| (currentBlendMode != blendMode))
 				{
 					flush(tilemap, renderer, currentBlendMode);
 				}

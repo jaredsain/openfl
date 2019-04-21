@@ -297,6 +297,7 @@ class Sound extends EventDispatcher
 		#end
 	}
 
+	#if false
 	/**
 		Extracts raw sound data from a Sound object.
 		This method is designed to be used when you are working with
@@ -320,7 +321,15 @@ class Sound extends EventDispatcher
 				the `target` parameter.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public function extract (target:ByteArray, length:Float, startPosition:Float = -1):Float;
+	#end
+
 	#if lime
+	/**
+		Creates a new Sound from an AudioBuffer immediately.
+
+		@param	buffer	An AudioBuffer instance
+		@returns	A new Sound
+	**/
 	public static function fromAudioBuffer(buffer:AudioBuffer):Sound
 	{
 		var sound = new Sound();
@@ -329,6 +338,19 @@ class Sound extends EventDispatcher
 	}
 	#end
 
+	/**
+		Creates a new Sound from a file path synchronously. This means that the
+		Sound will be returned immediately (if supported).
+
+		HTML5 and Flash do not support creating Sound synchronously, so these targets
+		always return `null`.
+
+		In order to load files from a remote web address, use the `loadFromFile` method,
+		which supports asynchronous loading.
+
+		@param	path	A local file path containing a sound
+		@returns	A new Sound if successful, or `null` if unsuccessful
+	**/
 	public static function fromFile(path:String):Sound
 	{
 		#if lime
@@ -425,14 +447,29 @@ class Sound extends EventDispatcher
 		}
 		else
 		{
-			AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_) AudioBuffer_onURLLoad(null));
+			AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_)
+			{
+				AudioBuffer_onURLLoad(null);
+			});
 		}
 		#else
-		AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_) AudioBuffer_onURLLoad(null));
+		AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_)
+		{
+			AudioBuffer_onURLLoad(null);
+		});
 		#end
 		#end
 	}
 
+	/**
+		Load MP3 sound data from a ByteArray object into a Sound object. The data will be read from the current
+		ByteArray position and will leave the ByteArray position at the end of the specified bytes length once
+		finished. If the MP3 sound data contains ID3 data ID3 events will be dispatched during this function call.
+		This function will throw an exception if the ByteArray object does not contain enough data.
+
+		@param	bytes
+		@param	bytesLength
+	**/
 	public function loadCompressedDataFromByteArray(bytes:ByteArray, bytesLength:Int):Void
 	{
 		if (bytes == null || bytesLength <= 0)
@@ -441,10 +478,10 @@ class Sound extends EventDispatcher
 			return;
 		}
 
-		if (bytes.length > bytesLength)
+		if (bytes.position > 0 || bytes.length > bytesLength)
 		{
 			var copy = new ByteArray(bytesLength);
-			copy.writeBytes(bytes, 0, bytesLength);
+			copy.writeBytes(bytes, bytes.position, bytesLength);
 			bytes = copy;
 		}
 
@@ -464,6 +501,16 @@ class Sound extends EventDispatcher
 		#end
 	}
 
+	/**
+		Creates a new Sound from a file path or web address asynchronously. The file
+		load will occur in the background.
+
+		Progress, completion and error callbacks will be dispatched in the current
+		thread using callbacks attached to a returned Future object.
+
+		@param	path	A local file path or web address containing a sound
+		@returns	A Future Sound
+	**/
 	public static function loadFromFile(path:String):Future<Sound>
 	{
 		#if lime
@@ -476,6 +523,17 @@ class Sound extends EventDispatcher
 		#end
 	}
 
+	/**
+		Creates a new Sound from a set of file paths or web addresses asynchronously.
+		The audio backend will choose the first compatible file format, and will load the file
+		it selects in the background.
+
+		Progress, completion and error callbacks will be dispatched in the current
+		thread using callbacks attached to a returned Future object.
+
+		@param	paths	A set of local file paths or web addresses containing sound
+		@returns	A Future Sound
+	**/
 	public static function loadFromFiles(paths:Array<String>):Future<Sound>
 	{
 		#if lime
@@ -488,6 +546,25 @@ class Sound extends EventDispatcher
 		#end
 	}
 
+	/**
+		Load PCM 32-bit floating point sound data from a ByteArray object into a Sound object. The data will be read
+		from the current ByteArray position and will leave the ByteArray position at the end of the specified sample
+		length multiplied by either 1 channel or 2 channels if the stereo flag is set once finished.
+
+		Starting with Flash Player 11.8, the amount of audio data that can be passed to this function is limited. For
+		SWF versions >= 21, this function throws an exception if the amount of audio data passed into this function is
+		more than 1800 seconds. That is, samples / sampleRate should be less than or equal to 1800. For swf versions <
+		21, the runtime fails silently if the amount of audio data passed in is more than 12000 seconds. This is
+		provided only for backward compatibility.
+
+		This function throws an exception if the ByteArray object does not contain enough data.
+
+		@param	bytes
+		@param	samples
+		@param	format
+		@param	stereo
+		@param	sampleRate
+	**/
 	public function loadPCMFromByteArray(bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100):Void
 	{
 		if (bytes == null)
@@ -496,10 +573,21 @@ class Sound extends EventDispatcher
 			return;
 		}
 
+		var bitsPerSample = (format == "float" ? 32 : 16); // "short"
+		var channels = (stereo ? 2 : 1);
+		var bytesLength = Std.int(samples * channels * (bitsPerSample / 8));
+
+		if (bytes.position > 0 || bytes.length > bytesLength)
+		{
+			var copy = new ByteArray(bytesLength);
+			copy.writeBytes(bytes, bytes.position, bytesLength);
+			bytes = copy;
+		}
+
 		#if lime
 		var audioBuffer = new AudioBuffer();
-		audioBuffer.bitsPerSample = format == "float" ? 32 : 16; // "short"
-		audioBuffer.channels = stereo ? 2 : 1;
+		audioBuffer.bitsPerSample = bitsPerSample;
+		audioBuffer.channels = channels;
 		audioBuffer.data = new UInt8Array(bytes);
 		audioBuffer.sampleRate = Std.int(sampleRate);
 

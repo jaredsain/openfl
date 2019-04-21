@@ -4,14 +4,20 @@ import openfl.events.Event;
 import openfl.events.ProgressEvent;
 import openfl.Lib;
 
+/**
+	The Preloader class is a Lime Preloader instance that uses an OpenFL
+	display object to display loading progress.
+**/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
 @:access(openfl.display.LoaderInfo)
+@SuppressWarnings("checkstyle:FieldDocComment")
 class Preloader
 {
-	@SuppressWarnings("checkstyle:Dynamic") public var onComplete:#if lime lime.app.Event < Void -> Void >= new lime.app.Event<Void->Void>() #else Dynamic #end;
+	@SuppressWarnings("checkstyle:Dynamic")
+	public var onComplete:#if lime lime.app.Event < Void -> Void >= new lime.app.Event<Void->Void>() #else Dynamic #end;
 
 	@:noCompletion private var complete:Bool;
 	@:noCompletion private var display:Sprite;
@@ -99,6 +105,7 @@ class Preloader
 	}
 }
 
+@SuppressWarnings("checkstyle:FieldDocComment")
 @:dox(hide) class DefaultPreloader extends Sprite
 {
 	@:noCompletion private var endAnimation:Int;

@@ -163,9 +163,35 @@ import sys.FileSystem;
 #end
 class SharedObject extends EventDispatcher
 {
+	/**
+		The default object encoding (AMF version) for all local shared objects created in
+		the SWF file. When local shared objects are written to disk, the
+		`SharedObject.defaultObjectEncoding` property indicates which Action Message
+		Format version should be used: the ActionScript 3.0 format (AMF3) or the
+		ActionScript 1.0 or 2.0 format (AMF0).
+
+		For more information about object encoding, including the difference between
+		encoding in local and remote shared objects, see the description of the
+		`objectEncoding` property.
+
+		The default value of `SharedObject.defaultObjectEncoding` is set to use the
+		ActionScript 3.0 format, AMF3. If you need to write local shared objects that
+		ActionScript 2.0 or 1.0 SWF files can read, set
+		`SharedObject.defaultObjectEncoding` to use the ActionScript 1.0 or ActionScript
+		2.0 format, `openfl.net.ObjectEncoding.AMF0`, at the beginning of your script,
+		before you create any local shared objects. All local shared objects created
+		thereafter will use AMF0 encoding and can interact with older content. You cannot
+		change the `objectEncoding` value of existing local shared objects by setting
+		`SharedObject.defaultObjectEncoding` after the local shared objects have been
+		created.
+
+		To set the object encoding on a per-object basis, rather than for all shared
+		objects created by the SWF file, set the objectEncoding property of the local
+		shared object instead.
+	**/
 	public static var defaultObjectEncoding:ObjectEncoding = ObjectEncoding.DEFAULT;
+
 	// @:noCompletion @:dox(hide) @:require(flash11_7) public static var preventBackup:Bool;
-	@:noCompletion private static var __sharedObjects:Map<String, SharedObject>;
 
 	/**
 		Indicates the object on which callback methods are invoked. The
@@ -261,6 +287,8 @@ class SharedObject extends EventDispatcher
 	**/
 	public var size(get, never):Int;
 
+	@:noCompletion private static var __sharedObjects:Map<String, SharedObject>;
+
 	@:noCompletion private var __localPath:String;
 	@:noCompletion private var __name:String;
 
@@ -329,6 +357,7 @@ class SharedObject extends EventDispatcher
 	**/
 	public function close():Void {}
 
+	#if !openfl_strict
 	/**
 		Connects to a remote shared object on a server through a specified
 		NetConnection object. Use this method after calling `getRemote()`.
@@ -341,9 +370,11 @@ class SharedObject extends EventDispatcher
 
 		Call the `connect()` method to connect to a remote shared object, for
 		example:
-		<codeblock xml:space="preserve"> var myRemoteSO:SharedObject =
-		SharedObject.getRemote("mo", myNC.uri, false);
-		myRemoteSO.connect(myNC); ```
+
+		```as3
+		var myRemoteSO:SharedObject = SharedObject.getRemote("mo", myNC.uri, false);
+		myRemoteSO.connect(myNC);
+		```
 
 		@param myConnection A NetConnection object that uses the Real-Time
 							Messaging Protocol (RTMP), such as a NetConnection
@@ -361,6 +392,7 @@ class SharedObject extends EventDispatcher
 	{
 		openfl._internal.Lib.notImplemented();
 	}
+	#end
 
 	// @:noCompletion @:dox(hide) public static function deleteAll (url:String):Int;
 
@@ -707,6 +739,7 @@ class SharedObject extends EventDispatcher
 		return __sharedObjects.get(id);
 	}
 
+	#if !openfl_strict
 	/**
 		Returns a reference to a shared object on Flash Media Server that
 		multiple clients can access. If the remote shared object does not
@@ -714,10 +747,14 @@ class SharedObject extends EventDispatcher
 		To create a remote shared object, call `getRemote()` the call
 		`connect()` to connect the remote shared object to the server, as in
 		the following:
-		<codeblock xml:space="preserve"> var nc:NetConnection = new
-		NetConnection(); nc.connect("rtmp://somedomain.com/applicationName");
-		var myRemoteSO:SharedObject = SharedObject.getRemote("mo", nc.uri,
-		false); myRemoteSO.connect(nc); ```
+
+		```as3
+		var nc:NetConnection = new NetConnection();
+		nc.connect("rtmp://somedomain.com/applicationName");
+		var myRemoteSO:SharedObject = SharedObject.getRemote("mo", nc.uri, false);
+		myRemoteSO.connect(nc);
+		```
+
 		To confirm that the local and remote copies of the shared object are
 		synchronized, listen for and handle the `sync` event. All clients that
 		want to share this object must pass the same values for the `name` and
@@ -730,8 +767,7 @@ class SharedObject extends EventDispatcher
 						   include forward slashes (/); for example,
 						   work/addresses is a legal name. Spaces are not
 						   allowed in a shared object name, nor are the
-						   following characters: <pre xml:space="preserve"> ~
-						   % & \ ; : " ' , > ? ? #</pre>
+						   following characters: `~ % & \ ; :  " ' , > ? ? #`
 		@param remotePath  The URI of the server on which the shared object
 						   will be stored. This URI must be identical to the
 						   URI of the NetConnection object passed to the
@@ -774,7 +810,9 @@ class SharedObject extends EventDispatcher
 
 		return null;
 	}
+	#end
 
+	#if !openfl_strict
 	/**
 		Broadcasts a message to all clients connected to a remote shared
 		object, including the client that sent the message. To process and
@@ -786,6 +824,7 @@ class SharedObject extends EventDispatcher
 	{
 		openfl._internal.Lib.notImplemented();
 	}
+	#end
 
 	/**
 		Indicates to the server that the value of a property in the shared

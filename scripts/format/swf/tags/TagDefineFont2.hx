@@ -223,8 +223,8 @@ class TagDefineFont2 extends TagDefineFont implements IDefinitionTag
 
 	override public function toString(indent:Int = 0):String
 	{
-		var str:String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "FontName: " + fontName + ", " + "Italic: " + italic + ", " +
-			"Bold: " + bold + ", " + "Glyphs: " + glyphShapeTable.length;
+		var str:String = Tag.toStringCommon(type, name, indent) + "ID: " + characterId + ", " + "FontName: " + fontName + ", " + "Italic: " + italic + ", "
+			+ "Bold: " + bold + ", " + "Glyphs: " + glyphShapeTable.length;
 		return str + toStringCommon(indent);
 	}
 
@@ -274,10 +274,7 @@ class TagDefineFont2 extends TagDefineFont implements IDefinitionTag
 			for (i in 0...fontBoundsTable.length)
 			{
 				var rect:SWFRectangle = fontBoundsTable[i];
-				if (rect.xmin != 0 ||
-					rect.xmax != 0 ||
-					rect.ymin != 0 ||
-					rect.ymax != 0)
+				if (rect.xmin != 0 || rect.xmax != 0 || rect.ymin != 0 || rect.ymax != 0)
 				{
 					hasNonNullBounds = true;
 					break;

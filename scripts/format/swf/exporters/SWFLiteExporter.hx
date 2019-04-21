@@ -40,6 +40,7 @@ import format.swf.tags.TagDefineEditText;
 import format.swf.tags.TagDefineFont;
 import format.swf.tags.TagDefineFont2;
 import format.swf.tags.TagDefineFont4;
+import format.swf.tags.TagDefineScalingGrid;
 import format.swf.tags.TagDefineShape;
 import format.swf.tags.TagDefineSprite;
 import format.swf.tags.TagDefineText;
@@ -237,8 +238,7 @@ class SWFLiteExporter
 					if (transparent) alpha.set(i, buffer.readUnsignedByte());
 				}
 
-				var paddedWidth:Int = Math.ceil(data.bitmapWidth / 4) * 4;
-				var values = Bytes.alloc((data.bitmapWidth + 1) * data.bitmapHeight);
+				var values = Bytes.alloc(data.bitmapWidth * data.bitmapHeight + data.bitmapHeight);
 				index = 0;
 
 				for (y in 0...data.bitmapHeight)
@@ -246,7 +246,7 @@ class SWFLiteExporter
 					values.set(index++, 0);
 					values.blit(index, buffer, buffer.position, data.bitmapWidth);
 					index += data.bitmapWidth;
-					buffer.position += paddedWidth;
+					buffer.position += data.bitmapWidth;
 				}
 
 				var png = new List();
@@ -261,7 +261,7 @@ class SWFLiteExporter
 				png.add(CPalette(palette));
 				if (transparent) png.add(CUnknown("tRNS", alpha));
 				var valuesBA:ByteArray = values;
-				valuesBA.deflate();
+				valuesBA.compress();
 				png.add(CData(valuesBA));
 				png.add(CEnd);
 
@@ -316,7 +316,7 @@ class SWFLiteExporter
 				var image = jpeg.decode(bytes.getData());
 				#end
 
-				var values = Bytes.alloc((image.width + 1) * image.height);
+				var values = Bytes.alloc(image.width * image.height + image.height);
 				var index = 0;
 
 				for (y in 0...image.height)
@@ -338,7 +338,7 @@ class SWFLiteExporter
 					}));
 				png.add(CPalette(alphaPalette));
 				var valuesBA:ByteArray = values;
-				valuesBA.deflate();
+				valuesBA.compress();
 				png.add(CData(valuesBA));
 				png.add(CEnd);
 
@@ -554,7 +554,6 @@ class SWFLiteExporter
 				frameObject = new FrameObject();
 				frameObject.symbol = object.characterId;
 				frameObject.id = object.placedAtIndex;
-
 				frameObject.name = placeTag.instanceName;
 
 				if (!lastModified.exists(object.placedAtIndex))
@@ -647,6 +646,12 @@ class SWFLiteExporter
 			}
 
 			symbol.frames.push(frame);
+		}
+
+		var scalingGrid = data.getScalingGrid(symbol.id);
+		if (scalingGrid != null && scalingGrid.splitter != null)
+		{
+			symbol.scale9Grid = scalingGrid.splitter.rect;
 		}
 
 		if (root)
@@ -847,6 +852,7 @@ class SWFLiteExporter
 
 		// TODO: Move to separate FrameScriptExporter class
 
+		#if !disable_framescript
 		// TODO: guard the rest of this code with appropriate macro
 		//       cuz not everyone wants to do it this way
 
@@ -882,7 +888,8 @@ class SWFLiteExporter
 				{
 					case NPublic(_) if (!~/^flash\./.match(superClsName.nameSpaceName)):
 						// store on SWFLite object for serialized .dat export
-						spriteSymbol.baseClassName = ("" == superClsName.nameSpaceName ? "" : superClsName.nameSpaceName + ".") + superClsName.name;
+						spriteSymbol.baseClassName = ("" == superClsName.nameSpaceName ? "" : superClsName.nameSpaceName + ".")
+							+ superClsName.name;
 						Log.info("", "data.className: " + symbol.name + ", baseClass: " + spriteSymbol.baseClassName);
 					case _:
 				}
@@ -1000,8 +1007,9 @@ class SWFLiteExporter
 											stack.pop();
 											if (prop != null)
 											{
-												stack.push(AVM2.getFullName(data.abcData, prop, cls) + "." + AVM2.parseFunctionCall(data
-														.abcData, cls, nameIndex, argCount, stack));
+												stack.push(AVM2.getFullName(data.abcData, prop, cls)
+													+ "."
+													+ AVM2.parseFunctionCall(data.abcData, cls, nameIndex, argCount, stack));
 											}
 										case OConstructProperty(nameIndex, argCount):
 											Log.info("", "OConstructProperty stack: " + stack);
@@ -1063,7 +1071,7 @@ class SWFLiteExporter
 											switch (j)
 											{
 												case JNeq:
-													//												Log.info ("", stack[0]);
+													// Log.info("", stack[0]);
 													var temp = stack.pop();
 													js += "if (" + Std.string(stack.pop()) + " == " + Std.string(temp) + ")\n";
 												case JAlways:
@@ -1101,6 +1109,7 @@ class SWFLiteExporter
 				}
 			}
 		}
+		#end
 	}
 
 	private function processTag(tag:IDefinitionTag):SWFSymbol

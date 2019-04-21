@@ -423,7 +423,8 @@ class CairoGraphics
 		return ((x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)) < 0;
 	}
 
-	private static function normalizeUVT(uvt:Vector<Float>, skipT:Bool = false):{max:Float, uvt:Vector<Float>} {
+	private static function normalizeUVT(uvt:Vector<Float>, skipT:Bool = false):NormalizedUVT
+	{
 		var max:Float = Math.NEGATIVE_INFINITY;
 		var tmp = Math.NEGATIVE_INFINITY;
 		var len = uvt.length;
@@ -496,8 +497,8 @@ class CairoGraphics
 				case CUBIC_CURVE_TO:
 					var c = data.readCubicCurveTo();
 					hasPath = true;
-					cairo.curveTo(c.controlX1 - offsetX, c.controlY1 - offsetY, c.controlX2 - offsetX, c.controlY2 - offsetY, c.anchorX - offsetX,
-						c.anchorY - offsetY);
+					cairo.curveTo(c.controlX1 - offsetX, c.controlY1 - offsetY, c.controlX2 - offsetX, c.controlY2 - offsetY, c.anchorX - offsetX, c
+						.anchorY - offsetY);
 
 				case CURVE_TO:
 					var c = data.readCurveTo();
@@ -777,8 +778,8 @@ class CairoGraphics
 						if (transformABCD && transformXY)
 						{
 							ti = i * 6;
-							tileTransform
-								.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4], transforms[ti + 5]);
+							tileTransform.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4], transforms[ti
+								+ 5]);
 						}
 						else if (transformABCD)
 						{
@@ -1495,4 +1496,10 @@ class CairoGraphics
 		}
 		#end
 	}
+}
+
+private typedef NormalizedUVT =
+{
+	max:Float,
+	uvt:Vector<Float>
 }

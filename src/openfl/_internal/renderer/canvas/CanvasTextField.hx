@@ -55,8 +55,8 @@ class CanvasTextField
 				&& !textEngine.background
 				&& !textEngine.border
 				&& !textEngine.__hasFocus
-				&& (textEngine.type != INPUT || !textEngine.selectable)) || ((textEngine.width <= 0 || textEngine.height <= 0) && textEngine
-					.autoSize != TextFieldAutoSize.NONE))
+				&& (textEngine.type != INPUT || !textEngine.selectable))
+				|| ((textEngine.width <= 0 || textEngine.height <= 0) && textEngine.autoSize != TextFieldAutoSize.NONE))
 			{
 				textField.__graphics.__canvas = null;
 				textField.__graphics.__context = null;
@@ -159,15 +159,19 @@ class CanvasTextField
 					for (group in textEngine.layoutGroups)
 					{
 						if (group.lineIndex < textField.scrollV - 1) continue;
-						if (group.lineIndex > textField.scrollV + textEngine.bottomScrollV - 2) break;
+						if (group.lineIndex > textEngine.bottomScrollV - 1) break;
 
 						var color = "#" + StringTools.hex(group.format.color & 0xFFFFFF, 6);
 
 						context.font = TextEngine.getFont(group.format);
 						context.fillStyle = color;
 
-						context.fillText(text.substring(group.startIndex, group.endIndex), group.offsetX + scrollX - bounds.x,
-							group.offsetY + group.ascent + scrollY - bounds.y);
+						context.fillText(text.substring(group.startIndex, group.endIndex), group.offsetX
+							+ scrollX
+							- bounds.x, group.offsetY
+							+ group.ascent
+							+ scrollY
+							- bounds.y);
 
 						if (textField.__caretIndex > -1 && textEngine.selectable)
 						{
@@ -196,8 +200,13 @@ class CanvasTextField
 									context.strokeStyle = "#" + StringTools.hex(group.format.color & 0xFFFFFF, 6);
 									context.moveTo(group.offsetX + advance - textField.scrollH - bounds.x, scrollY + 2 - bounds.y);
 									context.lineWidth = 1;
-									context.lineTo(group.offsetX + advance - textField.scrollH - bounds.x,
-										scrollY + TextEngine.getFormatHeight(textField.defaultTextFormat) - 1 - bounds.y);
+									context.lineTo(group.offsetX
+										+ advance
+										- textField.scrollH
+										- bounds.x, scrollY
+										+ TextEngine.getFormatHeight(textField.defaultTextFormat)
+										- 1
+										- bounds.y);
 									context.stroke();
 									context.closePath();
 

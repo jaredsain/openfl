@@ -8,10 +8,11 @@ import openfl._internal.renderer.cairo.CairoTextField;
 import openfl._internal.renderer.canvas.CanvasBitmap;
 import openfl._internal.renderer.canvas.CanvasDisplayObject;
 import openfl._internal.renderer.canvas.CanvasTextField;
-import openfl._internal.renderer.dom.DOMBitmap;
-import openfl._internal.renderer.dom.DOMTextField;
 import openfl._internal.renderer.context3D.Context3DBitmap;
 import openfl._internal.renderer.context3D.Context3DDisplayObject;
+import openfl._internal.renderer.context3D.Context3DTextField;
+import openfl._internal.renderer.dom.DOMBitmap;
+import openfl._internal.renderer.dom.DOMTextField;
 import openfl._internal.formats.swf.SWFLite;
 import openfl._internal.symbols.DynamicTextSymbol;
 import openfl._internal.symbols.FontSymbol;
@@ -421,6 +422,13 @@ class TextField extends InteractiveObject
 		The maximum value of `scrollV`.
 	**/
 	public var maxScrollV(get, never):Int;
+
+	/**
+		A Boolean value that indicates whether Flash Player automatically scrolls
+		multiline text fields when the user clicks a text field and rolls the mouse wheel.
+		By default, this value is `true`. This property is useful if you want to prevent
+		mouse wheel scrolling of text fields, or implement your own text field scrolling.
+	**/
 	public var mouseWheelEnabled(get, set):Bool;
 
 	/**
@@ -800,6 +808,8 @@ class TextField extends InteractiveObject
 		__updateText(__text + text);
 
 		__textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end = __text.length;
+
+		__updateScrollV();
 		__updateScrollH();
 	}
 
@@ -918,8 +928,10 @@ class TextField extends InteractiveObject
 		Returns a DisplayObject reference for the given `id`, for an image or
 		SWF file that has been added to an HTML-formatted text field by using
 		an `<img>` tag. The `<img>` tag is in the following format:
-		<pre xml:space="preserve">` <img src = 'filename.jpg' id =
-		'instanceName' >`</pre>
+
+		```html
+		<img src='filename.jpg' id='instanceName' />
+		```
 
 		@param id The `id` to match (in the `id` attribute of the `<img>`
 				  tag).
@@ -1310,6 +1322,9 @@ class TextField extends InteractiveObject
 	{
 		__selectionIndex = beginIndex;
 		__caretIndex = endIndex;
+
+		__updateScrollV();
+
 		__stopCursorTimer();
 		__startCursorTimer();
 	}
@@ -1944,7 +1959,8 @@ class TextField extends InteractiveObject
 
 			if ((y >= group.offsetY && y <= group.offsetY + group.height) || (!precise && nextGroup == null))
 			{
-				if ((x >= group.offsetX && x <= group.offsetX + group.width) || (!precise && (nextGroup == null || nextGroup.lineIndex != group.lineIndex)))
+				if ((x >= group.offsetX && x <= group.offsetX + group.width)
+					|| (!precise && (nextGroup == null || nextGroup.lineIndex != group.lineIndex)))
 				{
 					return group;
 				}
@@ -2156,11 +2172,7 @@ class TextField extends InteractiveObject
 		}
 		else
 		{
-			#if (js && html5)
-			CanvasTextField.render(this, cast renderer.__softwareRenderer, __worldTransform);
-			#elseif lime_cairo
-			CairoTextField.render(this, cast renderer.__softwareRenderer, __worldTransform);
-			#end
+			Context3DTextField.render(this, renderer);
 			Context3DDisplayObject.render(this, renderer);
 		}
 
@@ -2169,12 +2181,7 @@ class TextField extends InteractiveObject
 
 	@:noCompletion private override function __renderGLMask(renderer:OpenGLRenderer):Void
 	{
-		#if (js && html5)
-		CanvasTextField.render(this, cast renderer.__softwareRenderer, __worldTransform);
-		#elseif lime_cairo
-		CairoTextField.render(this, cast renderer.__softwareRenderer, __worldTransform);
-		#end
-
+		Context3DTextField.renderMask(this, renderer);
 		super.__renderGLMask(renderer);
 	}
 
@@ -2276,6 +2283,7 @@ class TextField extends InteractiveObject
 			}
 		}
 
+		__updateScrollV();
 		__updateScrollH();
 
 		__dirty = true;
@@ -2304,7 +2312,7 @@ class TextField extends InteractiveObject
 			__selectionIndex = __caretIndex;
 		}
 
-		var enableInput = #if (js && html5)(DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
+		var enableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
 
 		if (enableInput)
 		{
@@ -2330,7 +2338,7 @@ class TextField extends InteractiveObject
 
 	@:noCompletion private function __stopTextInput():Void
 	{
-		var disableInput = #if (js && html5)(DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
+		var disableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
 
 		if (disableInput)
 		{
@@ -2363,7 +2371,6 @@ class TextField extends InteractiveObject
 		if (__layoutDirty)
 		{
 			var cacheWidth = __textEngine.width;
-
 			__textEngine.update();
 
 			if (__textEngine.autoSize != NONE)
@@ -2428,6 +2435,47 @@ class TextField extends InteractiveObject
 			{
 				scrollH = 0;
 			}
+		}
+	}
+
+	@:noCompletion private function __updateScrollV():Void
+	{
+		__layoutDirty = true;
+		__updateLayout();
+
+		var lineIndex = getLineIndexOfChar(__caretIndex);
+
+		if (lineIndex == -1 && __caretIndex > 0)
+		{
+			// new paragraph
+			lineIndex = getLineIndexOfChar(__caretIndex - 1) + 1;
+		}
+
+		if (lineIndex + 1 < scrollV)
+		{
+			scrollV = lineIndex + 1;
+		}
+		else if (lineIndex + 1 > bottomScrollV)
+		{
+			var i = lineIndex, tempHeight = 0.0;
+
+			while (i >= 0)
+			{
+				if (tempHeight + __textEngine.lineHeights[i] <= height - 4)
+				{
+					tempHeight += __textEngine.lineHeights[i];
+					i--;
+				}
+				else
+					break;
+			}
+
+			scrollV = i + 2;
+		}
+		else
+		{
+			// TODO: can this be avoided? this doesn't need to hit the setter each time, just a couple times
+			scrollV = scrollV;
 		}
 	}
 
@@ -2730,6 +2778,7 @@ class TextField extends InteractiveObject
 		#else
 		__updateText(value);
 		#end
+		__updateScrollV();
 
 		return value;
 	}
@@ -2799,6 +2848,7 @@ class TextField extends InteractiveObject
 			__dirty = true;
 			__layoutDirty = true;
 			__updateText(__text);
+			__updateScrollV();
 			__updateScrollH();
 			__setRenderDirty();
 		}
@@ -2859,9 +2909,6 @@ class TextField extends InteractiveObject
 	@:noCompletion private function set_scrollV(value:Int):Int
 	{
 		__updateLayout();
-
-		if (value > __textEngine.maxScrollV) value = __textEngine.maxScrollV;
-		if (value < 1) value = 1;
 
 		if (value != __textEngine.scrollV)
 		{
@@ -2958,6 +3005,7 @@ class TextField extends InteractiveObject
 		__isHTML = false;
 
 		__updateText(value);
+		__updateScrollV();
 
 		return value;
 	}
@@ -3317,6 +3365,7 @@ class TextField extends InteractiveObject
 				}
 
 				__updateScrollH();
+				__updateScrollV();
 				__stopCursorTimer();
 				__startCursorTimer();
 
@@ -3349,6 +3398,8 @@ class TextField extends InteractiveObject
 				}
 
 				__updateScrollH();
+				__updateScrollV();
+
 				__stopCursorTimer();
 				__startCursorTimer();
 
@@ -3374,6 +3425,8 @@ class TextField extends InteractiveObject
 					__selectionIndex = __caretIndex;
 				}
 
+				__updateScrollV();
+
 				__stopCursorTimer();
 				__startCursorTimer();
 
@@ -3398,6 +3451,8 @@ class TextField extends InteractiveObject
 
 					__selectionIndex = __caretIndex;
 				}
+
+				__updateScrollV();
 
 				__stopCursorTimer();
 				__startCursorTimer();

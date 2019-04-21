@@ -105,6 +105,16 @@ class Bitmap extends DisplayObject
 	}
 	#end
 
+	/**
+		Initializes a Bitmap object to refer to the specified BitmapData object.
+
+		@param	bitmapData	The BitmapData object being referenced.
+		@param	pixelSnapping	Whether or not the Bitmap object is snapped to the nearest pixel.
+		@param	smoothing	Whether or not the bitmap is smoothed when scaled. For example, the following examples
+		show the same bitmap scaled by a factor of 3, with `smoothing` set to `false` (left) and `true` (right):
+
+		![A bitmap without smoothing.](/images/bitmap_smoothing_off.jpg) ![A bitmap with smoothing.](bitmap_smoothing_on.jpg)
+	**/
 	public function new(bitmapData:BitmapData = null, pixelSnapping:PixelSnapping = null, smoothing:Bool = false)
 	{
 		super();
@@ -336,7 +346,6 @@ class Bitmap extends DisplayObject
 		{
 			return __bitmapData.height * Math.abs(scaleY);
 		}
-
 		return 0;
 	}
 
@@ -344,16 +353,13 @@ class Bitmap extends DisplayObject
 	{
 		if (__bitmapData != null)
 		{
-			if (value != __bitmapData.height)
-			{
-				__setRenderDirty();
-				scaleY = value / __bitmapData.height;
-			}
-
-			return value;
+			scaleY = value / __bitmapData.height;
 		}
-
-		return 0;
+		else
+		{
+			scaleY = 0;
+		}
+		return value;
 	}
 
 	@:noCompletion private override function get_width():Float
@@ -362,7 +368,6 @@ class Bitmap extends DisplayObject
 		{
 			return __bitmapData.width * Math.abs(__scaleX);
 		}
-
 		return 0;
 	}
 
@@ -370,16 +375,13 @@ class Bitmap extends DisplayObject
 	{
 		if (__bitmapData != null)
 		{
-			if (value != __bitmapData.width)
-			{
-				__setRenderDirty();
-				scaleX = value / __bitmapData.width;
-			}
-
-			return value;
+			scaleX = value / __bitmapData.width;
 		}
-
-		return 0;
+		else
+		{
+			scaleX = 0;
+		}
+		return value;
 	}
 }
 #else

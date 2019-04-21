@@ -456,7 +456,8 @@ class CanvasGraphics
 		return ((x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)) < 0;
 	}
 
-	private static function normalizeUVT(uvt:Vector<Float>, skipT:Bool = false):{max:Float, uvt:Vector<Float>} {
+	private static function normalizeUVT(uvt:Vector<Float>, skipT:Bool = false):NormalizedUVT
+	{
 		var max:Float = Math.NEGATIVE_INFINITY;
 		var tmp = Math.NEGATIVE_INFINITY;
 		var len = uvt.length;
@@ -619,10 +620,10 @@ class CanvasGraphics
 
 						context.lineJoin = (c.joints == null ? "round" : Std.string(c.joints).toLowerCase());
 						context.lineCap = (c.caps == null ? "round" : switch (c.caps)
-							{
-								case CapsStyle.NONE: "butt";
-								default: Std.string(c.caps).toLowerCase();
-							});
+						{
+							case CapsStyle.NONE: "butt";
+							default: Std.string(c.caps).toLowerCase();
+						});
 
 						context.miterLimit = c.miterLimit;
 
@@ -790,8 +791,8 @@ class CanvasGraphics
 						if (transformABCD && transformXY)
 						{
 							ti = i * 6;
-							tileTransform
-								.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4], transforms[ti + 5]);
+							tileTransform.setTo(transforms[ti], transforms[ti + 1], transforms[ti + 2], transforms[ti + 3], transforms[ti + 4], transforms[ti
+								+ 5]);
 						}
 						else if (transformABCD)
 						{
@@ -1530,4 +1531,10 @@ class CanvasGraphics
 		}
 		#end
 	}
+}
+
+private typedef NormalizedUVT =
+{
+	max:Float,
+	uvt:Vector<Float>
 }

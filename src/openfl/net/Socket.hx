@@ -20,7 +20,11 @@ import openfl.utils.Endian;
 import openfl.utils.IDataInput;
 import openfl.utils.IDataOutput;
 #if (js && html5)
+#if haxe4
+import js.lib.ArrayBuffer;
+#else
 import js.html.ArrayBuffer;
+#end
 import js.html.WebSocket;
 import js.Browser;
 #end
@@ -129,6 +133,18 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 		is available before trying to read it with one of the `read` methods.
 	**/
 	public var bytesAvailable(get, never):Int;
+
+	/**
+		Indicates the number of bytes remaining in the write buffer.
+
+		Use this property in combination with with the OutputProgressEvent. An
+		OutputProgressEvent is thrown whenever data is written from the write buffer to
+		the network. In the event handler, you can check bytesPending to see how much data
+		is still left in the buffer waiting to be written. When bytesPending returns 0, it
+		means that all the data has been transferred from the write buffer to the network,
+		and it is safe to do things like remove event handlers, null out socket
+		references, start the next upload in a queue, etc.
+	**/
 	public var bytesPending(get, never):Int;
 
 	/**
@@ -151,7 +167,8 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 		Controls the version of AMF used when writing or reading an object.
 	**/
 	public var objectEncoding:ObjectEncoding;
-	public var secure:Bool;
+	@SuppressWarnings("checkstyle:FieldDocComment")
+	@:noCompletion @:dox(hide) public var secure:Bool;
 
 	/**
 		Indicates the number of milliseconds to wait for a connection.
@@ -880,7 +897,12 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 
 	/**
 		Writes a 16-bit integer to the socket. The bytes written are as
-		follows: <pre xml:space="preserve">`(v >> 8) & 0xff v & 0xff`</pre>
+		follows:
+
+		```
+		(v >> 8) & 0xff v & 0xff
+		```
+
 		The low 16 bits of the parameter are used; the high 16 bits are
 		ignored.
 

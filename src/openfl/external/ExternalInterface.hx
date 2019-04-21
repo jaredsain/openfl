@@ -30,7 +30,7 @@ import openfl._internal.Lib;
 	that the `id` attribute is set and the `id` and
 	`name` attributes of the `object` and
 	`embed` tags do not include the following characters:
-	`. - + ~~ / \`
+	`. - + * / \`
 
 	**Note for Flash Player applications:** Flash Player version
 	9.0.115.0 and later allows the `.`(period) character within the
@@ -236,7 +236,7 @@ import openfl._internal.Lib;
 
 							  `openfl.system.Security.allowDomain(_sourceDomain_)`
 	**/
-	public static function call(functionName:String, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Dynamic
+	public static function call(functionName:String, p1:Dynamic = null, p2:Dynamic = null, p3:Dynamic = null, p4:Dynamic = null, p5:Dynamic = null):Dynamic
 	{
 		#if (js && html5)
 		var callResponse:Dynamic = null;

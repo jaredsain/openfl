@@ -6,6 +6,7 @@ import openfl.display3D.Context3D;
 
 /**
 	TODO: Document GLSL Shaders
+
 	A ShaderParameter instance represents a single input parameter of a shader
 	kernel. A kernel can be defined to accept zero, one, or more parameters
 	that are used in the kernel execution. A ShaderParameter provides
@@ -14,14 +15,18 @@ import openfl.display3D.Context3D;
 	when the shader executes. To specify a value or values for the shader
 	parameter, create an Array containing the value or values and assign it to
 	the `value` property.
+
 	A ShaderParameter instance representing a parameter for a Shader instance
 	is accessed as a property of the Shader instance's `data` property. The
 	ShaderParameter property has the same name as the parameter's name in the
 	shader code. For example, if a shader defines a parameter named `radius`,
 	the ShaderParameter instance representing the `radius` parameter is
 	available as the `radius` property, as shown here:
-	<codeblock xml:space="preserve">var radiusParam:ShaderParameter =
-	myShader.data.radius;```
+
+	```haxe
+	var radiusParam:ShaderParameter = myShader.data.radius;
+	```
+
 	In addition to the defined properties of the ShaderParameter class, each
 	ShaderParameter instance has additional properties corresponding to any
 	metadata defined for the parameter. These properties are added to the
@@ -35,11 +40,25 @@ import openfl.display3D.Context3D;
 
 	For example, suppose a shader includes the following two parameter
 	declarations:
-	<codeblock xml:space="preserve"> parameter float2 size < description: "The
-	size of the image to which the kernel is applied"; minValue: float2(0.0,
-	0.0); maxValue: float2(100.0, 100.0); defaultValue: float2(50.0, 50.0); >;
-	parameter float radius < description: "The radius of the effect";
-	minValue: 0.0; maxValue: 50.0; defaultValue: 25.0; >; ```
+
+	```as3
+	parameter float2 size
+	<
+		description: "The size of the image to which the kernel is applied";
+		minValue: float2(0.0, 0.0);
+		maxValue: float2(100.0, 100.0);
+		defaultValue: float2(50.0, 50.0);
+	>;
+
+	parameter float radius
+	<
+		description: "The radius of the effect";
+		minValue: 0.0;
+		maxValue: 50.0;
+		defaultValue: 25.0;
+	>;
+	```
+
 	The ShaderParameter instance corresponding to the `size` parameter has the
 	following metadata properties in addition to its built-in properties:
 
@@ -80,7 +99,7 @@ import openfl.display3D.Context3D;
 		The zero-based index of the parameter.
 	**/
 	@SuppressWarnings("checkstyle:Dynamic") public var index(default, null):Dynamic;
-	@:noCompletion public var name(default, set):String;
+	@:noCompletion @:dox(hide) @SuppressWarnings("checkstyle:FieldDocComment") public var name(default, set):String;
 
 	/**
 		The data type of the parameter as defined in the shader. The set of
@@ -119,8 +138,11 @@ import openfl.display3D.Context3D;
 		the matrix, then the columns. For example, suppose the following line
 		of ActionScript is used to fill a `float2x2` parameter named
 		`myMatrix`:
-		<codeblock xml:space="preserve">myShader.data.myMatrix.value = [.1,
-		.2, .3, .4];```
+
+		```haxe
+		myShader.data.myMatrix.value = [.1, .2, .3, .4];
+		```
+
 		Within the shader, the matrix elements have the following values:
 
 		* `myMatrix[0][0]`: .1
@@ -410,8 +432,8 @@ import openfl.display3D.Context3D;
 					case BOOL3, INT3:
 						gl.uniform3i(index, Std.int(buffer[position]), Std.int(buffer[position + 1]), Std.int(buffer[position + 2]));
 					case BOOL4, INT4:
-						gl.uniform4i(index, Std.int(buffer[position]), Std.int(buffer[position + 1]), Std.int(buffer[position + 2]), Std
-							.int(buffer[position + 3]));
+						gl.uniform4i(index, Std.int(buffer[position]), Std.int(buffer[position + 1]), Std.int(buffer[position + 2]), Std.int(buffer[position
+							+ 3]));
 					case FLOAT:
 						gl.uniform1f(index, buffer[position]);
 					case FLOAT2:
@@ -492,7 +514,8 @@ import openfl.display3D.Context3D;
 							for (i in 0...4)
 							{
 								gl
-									.vertexAttrib4f(index + i, buffer[position + i * 4], buffer[position + i * 4 + 1], buffer[position + i * 4 + 2], buffer[position + i * 4 + 3]);
+									.vertexAttrib4f(index + i, buffer[position + i * 4], buffer[position + i * 4 + 1], buffer[position + i * 4 + 2], buffer[position
+									+ i * 4 + 3]);
 							}
 
 						default:

@@ -65,10 +65,14 @@ import openfl.utils.Endian;
 	read the event's `data`) property, which contains the sampled data. The
 	event will contain multiple samples, so you should use a `while` loop to
 	read the available data:
-	<codeblock xml:space="preserve">var soundBytes:ByteArray = new
-	ByteArray(); while(event.data.bytesAvailable) { var sample:Number =
-	event.data.readFloat(); soundBytes.writeFloat(sample); }```
 
+	```haxe
+	var soundBytes = new ByteArray();
+	while(event.data.bytesAvailable) {
+		var sample = event.data.readFloat();
+		soundBytes.writeFloat(sample);
+	}
+	```
 **/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
@@ -87,7 +91,7 @@ class SampleDataEvent extends Event
 		| `cancelable` | `false`; there is no default behavior to cancel. |
 		| `position` | The point from which audio data is provided. |
 	**/
-	public static inline var SAMPLE_DATA:String = "sampleData";
+	public static inline var SAMPLE_DATA:EventType<SampleDataEvent> = "sampleData";
 
 	/**
 		The data in the audio stream.
@@ -121,7 +125,7 @@ class SampleDataEvent extends Event
 		position = 0.0;
 	}
 
-	public override function clone():Event
+	public override function clone():SampleDataEvent
 	{
 		var event = new SampleDataEvent(type, bubbles, cancelable);
 		event.target = target;

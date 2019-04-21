@@ -244,6 +244,8 @@ class LoaderContext
 		source.
 	**/
 	public var checkPolicyFile:Bool;
+
+	#if false
 	/**
 		Specifies whether to decode image data when it is used or when it is
 		loaded.
@@ -267,6 +269,9 @@ class LoaderContext
 		data at any time and re-decode the image the next time it is required.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public var imageDecodingPolicy:openfl.system.ImageDecodingPolicy;
+	#end
+
+	#if false
 	/**
 		An Object containing the parameters to pass to the LoaderInfo object
 		of the content.
@@ -293,18 +298,29 @@ class LoaderContext
 
 		The following code uses the LoaderContext.parameters property to
 		replicate a parameter passed to this URL:
-		<pre xml:space="preserve"> import openfl.system.LoaderContext; import
-		openfl.display.Loader; var l:Loader = new Loader(); var
-		lc:LoaderContext = new LoaderContext; lc.parameters = { "foo": "bar"
-		}; l.load(new URLRequest("child.swf"), lc); </pre>
+
+		```haxe
+		import openfl.system.LoaderContext;
+		import openfl.display.Loader;
+
+		var l = new Loader();
+		var lc = new LoaderContext;
+		lc.parameters = { "foo": "bar" };
+		l.load(new URLRequest("child.swf"), lc);
+		```
 		To verify that the parameter passed properly, use the following trace
 		statement after you run this code:
 
-		`trace(loaderInfo.parameters.foo);`
+		```haxe
+		trace(loaderInfo.parameters.foo);
+		```
 
 		If the content loaded successfully, this trace prints "bar".
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public var parameters:Dynamic;
+	#end
+
+	#if false
 	/**
 		The parent to which the Loader will attempt to add the loaded content.
 
@@ -335,16 +351,26 @@ class LoaderContext
 
 		The following code uses `requestedContentParent` to place the loaded
 		content into a Sprite object:
-		<pre xml:space="preserve"> import openfl.system.LoaderContext; import
-		openfl.display.Loader; import openfl.display.Sprite; var
-		lc:LoaderContext = new LoaderContext(); var l:Loader = new Loader();
-		var s:Sprite = new Sprite(); lc.requestedContentParent = s;
-		addChild(s); l.load(new URLRequest("child.swf"), lc); </pre>
+
+		```haxe
+		import openfl.system.LoaderContext;
+		import openfl.display.Loader;
+		import openfl.display.Sprite;
+
+		var lc = new LoaderContext();
+		var l = new Loader();
+		var s = new Sprite();
+		lc.requestedContentParent = s;
+		addChild(s);
+		l.load(new URLRequest("child.swf"), lc);
+		```
+
 		When this code runs, the child SWF file appears on stage. This fact
 		confirms that the Sprite object you added to the stage is the parent
 		of the loaded child.swf file.
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public var requestedContentParent:DisplayObjectContainer;
+	#end
 
 	/**
 		Specifies the security domain to use for a `Loader.load()` operation.

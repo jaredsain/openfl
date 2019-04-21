@@ -13,7 +13,12 @@ import lime.ui.Gamepad;
 @:access(openfl.ui.GameInputControl)
 @:final class GameInputDevice
 {
-	public static var MAX_BUFFER_SIZE:Int = 32000;
+	/**
+		Specifies the maximum size for the buffer used to cache sampled control values.
+		If `startCachingSamples` returns samples that require more memory than you specify,
+		it throws a memory error.
+	**/
+	public static inline var MAX_BUFFER_SIZE:Int = 32000;
 
 	/**
 		Enables or disables this device.

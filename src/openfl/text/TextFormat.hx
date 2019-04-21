@@ -269,6 +269,7 @@ class TextFormat
 		this.leading = leading;
 	}
 
+	@SuppressWarnings("checkstyle:FieldDocComment")
 	@:dox(hide) @:noCompletion public function clone():TextFormat
 	{
 		var newFormat = new TextFormat(font, size, color, bold, italic, underline, url, target);
@@ -299,10 +300,7 @@ class TextFormat
 		if (format.bold != null) bold = format.bold;
 		if (format.italic != null) italic = format.italic;
 		if (format.underline != null) underline = format.underline;
-
-		if (format.url != null && format.url != "") url = format.url;
-		if (format.url == "" && url == null) url = "";
-
+		if (format.url != null) url = format.url;
 		if (format.target != null) target = format.target;
 		if (format.align != null) align = format.align;
 		if (format.leftMargin != null) leftMargin = format.leftMargin;
