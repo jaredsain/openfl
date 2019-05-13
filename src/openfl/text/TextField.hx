@@ -2848,7 +2848,7 @@ class TextField extends InteractiveObject
 			__dirty = true;
 			__layoutDirty = true;
 			__updateText(__text);
-			__updateScrollV();
+			//__updateScrollV();
 			__updateScrollH();
 			__setRenderDirty();
 		}
