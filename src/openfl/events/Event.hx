@@ -49,8 +49,6 @@ import openfl._internal.utils.ObjectPool;
 #end
 class Event
 {
-	@:noCompletion private static var __pool:ObjectPool<Event> = new ObjectPool<Event>(20);
-
 	/**
 		The `ACTIVATE` constant defines the value of the `type` property of an
 		`activate` event object.
@@ -99,6 +97,7 @@ class Event
 		| `target` | The DisplayObject instance being added to the on stage display list, either directly or through the addition of a sub tree in which the DisplayObject instance is contained. If the DisplayObject instance is being directly added, the `added` event occurs before this event. |
 	**/
 	public static inline var ADDED_TO_STAGE:EventType<Event> = "addedToStage";
+
 	// @:noCompletion @:dox(hide) @:require(flash15) public static var BROWSER_ZOOM_CHANGE:String;
 
 	/**
@@ -128,6 +127,7 @@ class Event
 		| `target` | The object that has had its value modified. The `target` is not always the object in the display list that registered the event listener. Use the `currentTarget` property to access the object in the display list that is currently processing the event. |
 	**/
 	public static inline var CHANGE:EventType<Event> = "change";
+
 	// @:noCompletion @:dox(hide) public static var CHANNEL_MESSAGE:String;
 	// @:noCompletion @:dox(hide) public static var CHANNEL_STATE:String;
 
@@ -708,6 +708,8 @@ class Event
 	**/
 	public var type(default, null):String;
 
+	@:noCompletion private static var __pool:ObjectPool<Event> = new ObjectPool<Event>(function() return new Event(null), function(event) event.__init());
+
 	@:noCompletion private var __isCanceled:Bool;
 	@:noCompletion private var __isCanceledNow:Bool;
 	@:noCompletion private var __preventDefault:Bool;
@@ -898,6 +900,17 @@ class Event
 
 		output += "]";
 		return output;
+	}
+
+	@:noCompletion private function __init():Void
+	{
+		// type = null;
+		bubbles = false;
+		cancelable = false;
+		eventPhase = AT_TARGET;
+		__isCanceled = false;
+		__isCanceledNow = false;
+		__preventDefault = false;
 	}
 }
 #else

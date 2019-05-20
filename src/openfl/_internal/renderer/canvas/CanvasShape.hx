@@ -53,8 +53,6 @@ class CanvasShape
 						var scaleY = graphics.__renderTransform.d;
 						var renderScaleX = transform.a;
 						var renderScaleY = transform.d;
-						var unscaledRenderScaleX = shape.__worldTransform.a / shape.scaleX;
-						var unscaledRenderScaleY = shape.__worldTransform.d / shape.scaleY;
 
 						var left = Math.round(scale9Grid.x * scaleX);
 						var top = Math.round(scale9Grid.y * scaleY);
@@ -63,10 +61,10 @@ class CanvasShape
 						var centerWidth = Math.round(scale9Grid.width * scaleX);
 						var centerHeight = Math.round(scale9Grid.height * scaleY);
 
-						var renderLeft = Math.round(scale9Grid.x * unscaledRenderScaleX);
-						var renderTop = Math.round(scale9Grid.y * unscaledRenderScaleY);
-						var renderRight = Math.round((bounds.right - scale9Grid.right) * unscaledRenderScaleX);
-						var renderBottom = Math.round((bounds.bottom - scale9Grid.bottom) * unscaledRenderScaleY);
+						var renderLeft = Math.round(scale9Grid.x * renderScaleX);
+						var renderTop = Math.round(scale9Grid.y * renderScaleY);
+						var renderRight = Math.round((bounds.right - scale9Grid.right) * renderScaleX);
+						var renderBottom = Math.round((bounds.bottom - scale9Grid.bottom) * renderScaleY);
 						var renderCenterWidth = Math.round(width * renderScaleX) - renderLeft - renderRight;
 						var renderCenterHeight = Math.round(height * renderScaleY) - renderTop - renderBottom;
 
@@ -87,8 +85,8 @@ class CanvasShape
 							context.drawImage(canvas, 0, top + centerHeight, left, bottom, 0, renderTop + renderCenterHeight, renderLeft, renderBottom);
 							context.drawImage(canvas, left, top + centerHeight, centerWidth, bottom, renderLeft, renderTop + renderCenterHeight,
 								renderCenterWidth, renderBottom);
-							context
-								.drawImage(canvas, left + centerWidth, top + centerHeight, right, bottom, renderLeft + renderCenterWidth, renderTop + renderCenterHeight, renderRight, renderBottom);
+							context.drawImage(canvas, left + centerWidth, top + centerHeight, right, bottom, renderLeft + renderCenterWidth, renderTop
+								+ renderCenterHeight, renderRight, renderBottom);
 						}
 						else if (centerWidth == 0 && centerHeight != 0)
 						{
