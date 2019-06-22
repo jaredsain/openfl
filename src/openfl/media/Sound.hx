@@ -644,7 +644,7 @@ class Sound extends EventDispatcher
 		var source = new AudioSource(__buffer);
 		source.offset = Std.int(startTime);
 		if (loops > 1) source.loops = loops - 1;
-		#if js || html5
+		#if (js || html5)
 		else if(loops == -1) source.loops = 999999;
 		#else
 		else if(loops == -1) source.loops = -1;
